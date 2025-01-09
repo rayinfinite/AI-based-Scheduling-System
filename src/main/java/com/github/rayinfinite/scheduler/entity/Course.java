@@ -5,36 +5,53 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.github.rayinfinite.scheduler.excel.DateConverter;
 import com.github.rayinfinite.scheduler.excel.IntegerConverter;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Date;
 
 @Data
 @Entity
-//@Table(name = "input_data")
-public class InputData {
+@ToString
+@NoArgsConstructor
+public class Course {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @ExcelIgnore
-    Long id;
+    Integer id;
     String practiceArea;
     String courseName;
     String courseCode;
     @ExcelProperty(converter = IntegerConverter.class)
     Integer duration;
     String software;
+    //    @ExcelIgnore
+    @ExcelProperty(converter = IntegerConverter.class)
+    Integer cohortId;
     String cohort;
-    String run;
+    @ExcelProperty(converter = IntegerConverter.class)
+    Integer run;
+    @ExcelIgnore
     @ExcelProperty(converter = DateConverter.class)
     Date courseDate;
+
+    @ExcelIgnore
     String week;
+    @ExcelIgnore
     String classroom;
+
     String teacher1;
     String teacher2;
     String teacher3;
+
     String manager;
     String cert;
+    @ExcelProperty(converter = IntegerConverter.class)
+    Integer professorNum;
+
+    @ExcelIgnore
+    @Transient
+    int[] teacherIds;
 }

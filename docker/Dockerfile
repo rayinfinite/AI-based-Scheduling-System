@@ -5,6 +5,6 @@ ENV JAVA_OPTS="-XX:+UseZGC -XX:+ZGenerational"
 ENV NAME="scheduler-0.0.1.jar"
 
 WORKDIR /app
-COPY target/$NAME /app/app.jar
+COPY $NAME /app/app.jar
 EXPOSE $SERVER_PORT
 ENTRYPOINT ["java","-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}","$JAVA_OPTS","-jar","/app/app.jar"]

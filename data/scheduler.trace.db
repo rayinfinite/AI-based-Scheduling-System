@@ -1,9 +1,0 @@
-2024-11-22 18:04:24.176992+08:00 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INPUTDATA" not found; SQL statement:
-SELECT DISTINCT ? FROM InputData [42102-232]
-2024-11-22 18:04:28.488511+08:00 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "INPUTDATA" not found; SQL statement:
-SELECT DISTINCT ? FROM InputData [42102-232]
-2024-11-22 18:06:13.942294+08:00 jdbc[3]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT DISTINCT t.[*]? FROM input_data t"; expected "identifier"; SQL statement:
-SELECT DISTINCT t.? FROM input_data t [42001-232]

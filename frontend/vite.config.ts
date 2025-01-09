@@ -1,9 +1,15 @@
-import {defineConfig} from "vite";
+import path from "path";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
   build: {
     rollupOptions: {
       output: {
@@ -16,12 +22,12 @@ export default defineConfig({
         // 手动控制代码拆分
         manualChunks: {
           react: ["react", "react-dom"],
-          antd: ["antd"],
           fullcalendar: [
             "@fullcalendar/core",
             "@fullcalendar/daygrid",
-            "@fullcalendar/timegrid",
             "@fullcalendar/interaction",
+            "@fullcalendar/react",
+            "@fullcalendar/timegrid",
           ],
         },
       },

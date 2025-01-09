@@ -27,8 +27,6 @@ public class CorsConfig implements WebMvcConfigurer {
     private final String[] exposedHeaders = {
             "Access-Control-Allow-Origin",
             "Access-Control-Allow-Credentials"};
-    //    @Value("${cors.allowedOrigins}")
-    private final String allowedOrigins = "*";
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -39,7 +37,6 @@ public class CorsConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOriginPattern("*");
-//        config.setAllowedOrigins(List.of(allowedOrigins));
         config.setAllowedMethods(List.of(allowedMethods));
         config.setAllowedHeaders(List.of(allowedHeaders));
         config.setExposedHeaders(List.of(exposedHeaders));

@@ -1,16 +1,23 @@
-import React, {memo, useCallback, useEffect, useRef, useState} from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
-import {CalendarApi, EventApi, EventSourceFunc, formatDate} from "@fullcalendar/core";
+import { CalendarApi, EventApi, EventContentArg, EventSourceFunc, formatDate } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import {getCalenderData} from "./api";
+import { getCalenderData } from "./api";
 import Header from "./MyCalenderHeader";
-import {useViewport} from "./ViewportContext";
-import {Modal} from "antd";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface EventDetailsProps {
-  selectedEvent: any;
+  selectedEvent: EventApi | null;
   handleCloseDetails: () => void;
 }
 
@@ -32,56 +39,55 @@ const EventDetails: React.FC<EventDetailsProps> = memo(({ selectedEvent, handleC
   } = extendedProps || {};
 
   const formatProperty = (label: string, value?: string) => (
-    <p key={label}>
-      <strong>{label}:</strong> {value}
+    <p key={label} className="flex mb-2">
+      <strong className="w-1/3 font-semibold">{label}:</strong> {value}
     </p>
   );
 
   return (
-    <Modal
-      width={400}
-      footer={null}
-      title={null}
-      open={selectedEvent != null}
-      onOk={handleCloseDetails}
-      onCancel={handleCloseDetails}
-    >
-      <h2>{title}</h2>
-      {formatProperty("Practice Area", practiceArea)}
-      {formatProperty("Course Code", courseCode)}
-      {formatProperty("Duration (Days)", duration)}
-      {formatProperty("Software", software)}
-      {formatProperty("Cohort", cohort)}
-      {formatProperty("Run #", run)}
-      {formatProperty("Start", start ? new Date(start).toLocaleString() : "")}
-      {formatProperty("Classroom", classroom)}
-      {formatProperty("Teacher 1", teacher1)}
-      {formatProperty("Teacher 2", teacher2)}
-      {formatProperty("Teacher 3", teacher3)}
-      {formatProperty("Manager", manager)}
-      {formatProperty("Grad Cert (MTech)", cert)}
-    </Modal>
+    <Dialog open={selectedEvent != null} onOpenChange={handleCloseDetails}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          {formatProperty("Practice Area", practiceArea)}
+          {formatProperty("Course Code", courseCode)}
+          {formatProperty("Duration (Days)", duration)}
+          {formatProperty("Software", software)}
+          {formatProperty("Cohort", cohort)}
+          {formatProperty("Run #", run)}
+          {formatProperty("Start", start ? new Date(start).toLocaleString() : "")}
+          {formatProperty("Classroom", classroom)}
+          {formatProperty("Teacher 1", teacher1)}
+          {formatProperty("Teacher 2", teacher2)}
+          {formatProperty("Teacher 3", teacher3)}
+          {formatProperty("Manager", manager)}
+          {formatProperty("Grad Cert (MTech)", cert)}
+        </DialogDescription>
+        <DialogFooter>
+          <Button onClick={handleCloseDetails}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 });
 
 const MyCalendar: React.FC = () => {
   const calendarRef = useRef<FullCalendar | null>(null);
-  const [calendarApi, setCalendarApi] = useState<CalendarApi | null>(null);
+  const [calendarApi, setCalendarApi] = useState<CalendarApi>();
   const [events, setEvents] = useState<EventApi[]>([]);
-  const [teachers, setTeachers] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<EventApi | null>(null);
+  const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
 
   useEffect(() => {
-    let calendarApi = calendarRef.current?.getApi();
+    const calendarApi = calendarRef.current?.getApi();
     if (calendarApi) {
       setCalendarApi(calendarApi);
       setEvents(calendarApi.getEvents());
     }
   }, []);
-
-  const viewport = useViewport();
-  if (!viewport) return null;
-  const { width } = viewport;
 
   const handleEventClick = (clickInfo: { event: EventApi }) => {
     setSelectedEvent(clickInfo.event);
@@ -91,19 +97,17 @@ const MyCalendar: React.FC = () => {
     setSelectedEvent(null);
   };
 
-  const renderEventContent = (eventInfo: any) => {
+  const renderEventContent = (eventInfo: EventContentArg) => {
     const title = eventInfo.event.title;
     const data = eventInfo.event.extendedProps;
     const color = getRandomColor(title);
-    const fontSize1 = width > 1320 ? "18px" : width > 660 ? "14px" : "10px";
-    const fontSize2 = width > 1320 ? "14px" : width > 660 ? "10px" : "8px";
+
     return (
-      <div style={{ padding: "4px 8px", backgroundColor: color, cursor: "pointer" }}>
-        <i style={{ fontSize: fontSize1, color: "#111", fontWeight: "bold" }}>{title}</i>
-        <div style={{ fontSize: fontSize2, color: "#333", display: "flex", justifyContent: "space-between" }}>
-          <i>{data.classroom}</i>
-          <br />
-          <i>{data.teacher1}</i>
+      <div className={`p-1 px-2 cursor-pointer`} style={{ backgroundColor: color }}>
+        <i className="text-[10px] sm:text-[14px] lg:text-[18px] font-bold text-gray-900 leading-none ">{title}</i>
+        <div className="text-[8px] sm:text-[10px] lg:text-[14px] text-gray-700 flex justify-between mt-1 leading-none italic flex-col md:flex-row">
+          <span>{data.classroom}</span>
+          <span>{data.teacher1}</span>
         </div>
       </div>
     );
@@ -112,19 +116,27 @@ const MyCalendar: React.FC = () => {
   const fetchEvents: EventSourceFunc = useCallback(
     async (fetchInfo, successCallback, failureCallback) => {
       try {
-        let data = await getCalenderData(fetchInfo, teachers);
+        const data = await getCalenderData(fetchInfo, selectedTeachers, selectedStudents);
         setEvents(data);
         successCallback(data);
-      } catch (err: any) {
-        failureCallback(err);
+      } catch (err) {
+        failureCallback(err as Error);
       }
     },
-    [teachers]
+    [selectedTeachers, selectedStudents]
   );
 
   return (
     <div>
-      <Header calendarApi={calendarApi} setTeachers={setTeachers} />
+      {calendarApi && (
+        <Header
+          calendarApi={calendarApi}
+          selectedTeachers={selectedTeachers}
+          setSelectedTeachers={setSelectedTeachers}
+          selectedStudents={selectedStudents}
+          setSelectedStudents={setSelectedStudents}
+        />
+      )}
       <div>
         <FullCalendar
           ref={calendarRef}
@@ -164,15 +176,16 @@ function getRandomColor(seed: string) {
 export default MyCalendar;
 
 const Sidebar: React.FC<{ events: EventApi[] }> = ({ events }) => {
-  function renderSidebarEvent(event: any) {
+  function renderSidebarEvent(event: EventApi) {
     return (
       <li key={event.id}>
         <b>
-          {formatDate(event.start, {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
+          {event.start &&
+            formatDate(event.start, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            })}
         </b>
         <i>{event.title}</i>
       </li>

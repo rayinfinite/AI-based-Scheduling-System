@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import java.io.Serial;
 
 @Getter
+@SuppressWarnings("unused")
 public class BusinessException extends RuntimeException {
     @Serial
     private static final long serialVersionUID = -1145141919810L;

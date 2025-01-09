@@ -37,7 +37,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         throw ex;
     }
 
-    private  ResponseEntity<Object> handleMyException(Throwable ex, WebRequest request, HttpStatus status) {
+    private ResponseEntity<Object> handleMyException(Throwable ex, WebRequest request, HttpStatus status) {
         ErrorResponseException errorResponseException = new ErrorResponseException(
                 status,
                 ProblemDetail.forStatusAndDetail(status, ex.getMessage()),

@@ -1,15 +1,28 @@
 spring:
   datasource:
-#    url: jdbc:postgresql://43.134.23.181:5432/scheduler
-#    url: jdbc:postgresql://localhost:5432/scheduler
-#    driverClassName: org.postgresql.Driver
-#    username: postgres
-#    password: Wasd2333
-    url: jdbc:h2:file:./data/scheduler;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driverClassName: org.h2.Driver
+    url: jdbc:postgresql://43.134.166.185:5432/scheduler
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: Wasd2333
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
+  cloud:
+    azure:
+      active-directory:
+        enabled: true
+        profile:
+          tenant-id: common
+        credential:
+          client-id: f3ee6226-fd8b-4cae-a9e7-f3c211b0970b
+          client-secret:
+        post-logout-redirect-uri: http://localhost:9000

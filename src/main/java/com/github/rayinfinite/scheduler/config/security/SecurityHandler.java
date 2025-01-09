@@ -29,7 +29,7 @@ public class SecurityHandler implements AuthenticationEntryPoint, AccessDeniedHa
     }
 
     private void writeResponse(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(status.value());
         PrintWriter writer = response.getWriter();
         writer.print(Response.builder().message(message).code("fail").build());

@@ -8,7 +8,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class DateConverter implements Converter<Date> {
-    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/M/d");
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy/M/d");
 
     @Override
     public Class<?> supportJavaTypeKey() {
