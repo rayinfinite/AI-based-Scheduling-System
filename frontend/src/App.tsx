@@ -1,4 +1,3 @@
-import MyCalendar from "./MyCalender";
 import MyRayCalendar from "./MyRayCalendar";
 import UploadPage from "./UploadPage";
 
@@ -8,7 +7,6 @@ function App() {
       <h1 className="my-5">AI Course Scheduling System</h1>
       <UploadPage />
       <MyRayCalendar />
-      {/* <MyCalendar /> */}
     </div>
   );
 }

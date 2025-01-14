@@ -199,7 +199,7 @@ const MyRayCalendar: React.FC = () => {
 
 function getRandomColor(seed: string) {
   let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
+  for (let i = seed.length - 1; i >= 0; i--) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
   let color = "#";
