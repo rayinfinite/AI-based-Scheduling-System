@@ -1,9 +1,6 @@
-import { EventSourceFuncArg } from "@fullcalendar/core";
-
 export const ROOT_PATH = "http://localhost:9000";
 
-export async function getCalenderData(fetchInfo: EventSourceFuncArg, teachers: string[], students: string[]) {
-  const { startStr, endStr } = fetchInfo;
+export async function getCalenderData(startStr: string, endStr: string, teachers: string[], students: string[]) {
   const params = new URLSearchParams({
     startStr,
     endStr,
@@ -16,6 +13,7 @@ export async function getCalenderData(fetchInfo: EventSourceFuncArg, teachers: s
       const events = data.data;
       events.forEach((event: any) => {
         event.title = event.courseName;
+        event.resource = event.classroom;
         const date = new Date(Number(event.courseDate));
         event.start = date.toISOString();
         event.end = date.toISOString();

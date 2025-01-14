@@ -116,7 +116,8 @@ const MyCalendar: React.FC = () => {
   const fetchEvents: EventSourceFunc = useCallback(
     async (fetchInfo, successCallback, failureCallback) => {
       try {
-        const data = await getCalenderData(fetchInfo, selectedTeachers, selectedStudents);
+        const { start, end } = fetchInfo;
+        const data = await getCalenderData(start.toISOString(), end.toISOString(), selectedTeachers, selectedStudents);
         setEvents(data);
         successCallback(data);
       } catch (err) {

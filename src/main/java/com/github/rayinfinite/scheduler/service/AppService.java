@@ -31,7 +31,7 @@ public class AppService {
     private final ClassroomService classroomService;
     private final GAService gaService;
     private final Lock lock = new ReentrantLock();
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public String upload(MultipartFile file) throws IOException {
         lock.lock();
