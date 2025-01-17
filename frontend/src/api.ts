@@ -1,4 +1,4 @@
-export const ROOT_PATH = "http://localhost:9000";
+export const ROOT_PATH = process.env.NODE_ENV === "production" ? "" : "http://localhost:9000";
 
 export async function getCalenderData(startStr: string, endStr: string, teachers: string[], students: string[]) {
   const params = new URLSearchParams({
@@ -90,6 +90,15 @@ export async function deleteClassroom(id: number) {
 export async function getUser(): Promise<boolean> {
   return await fetch(`${ROOT_PATH}/login`)
     .then((response) => response.json())
+    .catch((error) => console.error("Error:", error));
+}
+
+export async function getClassname(): Promise<string[]> {
+  return await fetch(`${ROOT_PATH}/classname`)
+    .then((response) => response.json())
+    .then((data) => {
+      return data.data;
+    })
     .catch((error) => console.error("Error:", error));
 }
 

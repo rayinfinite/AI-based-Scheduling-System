@@ -3,6 +3,7 @@ package com.github.rayinfinite.scheduler.controller;
 import com.github.rayinfinite.scheduler.entity.Course;
 import com.github.rayinfinite.scheduler.entity.Response;
 import com.github.rayinfinite.scheduler.service.AppService;
+import com.github.rayinfinite.scheduler.service.ClassroomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppController {
     private final AppService service;
+    private final ClassroomService classroomService;
 
     @PostMapping("/upload")
     public Response getExcel(MultipartFile file) throws IOException {
@@ -42,6 +44,12 @@ public class AppController {
     @GetMapping("/student")
     public Response getAllCohorts() {
         List<String> data = service.getAllCohorts();
+        return new Response(data);
+    }
+
+    @GetMapping("/classname")
+    public Response getAllClassrooms() {
+        List<String> data = classroomService.getAllClassroomNames();
         return new Response(data);
     }
 }

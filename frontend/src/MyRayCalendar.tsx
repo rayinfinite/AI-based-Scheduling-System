@@ -1,5 +1,5 @@
 import { memo, ReactNode, useEffect, useState } from "react";
-import { getAllStudents, getAllTeachers, getCalenderData } from "./api";
+import { getAllStudents, getAllTeachers, getCalenderData, getClassname } from "./api";
 import RayCalendar from "./components/calendar/RayCalendar";
 import { EventInfo } from "./components/calendar/RayCalendarType";
 import {
@@ -84,6 +84,7 @@ const MyRayCalendar: React.FC = () => {
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [resources, setResources] = useState<string[]>([]);
 
   const fetchEvents = async (start: Date, end: Date) => {
     const startString = format(start, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -116,24 +117,13 @@ const MyRayCalendar: React.FC = () => {
     setSelectedEvent(null);
   };
 
-  const resources = [
-    "Room1",
-    "Room2",
-    "Room3",
-    "Room4",
-    "Room5",
-    "Room6",
-    "Room7",
-    "Room8",
-    "Room9",
-    "Room10",
-    "Room11",
-    "Room12",
-    "Room13",
-    "Room14",
-    "Room15",
-    "Room16",
-  ];
+  useEffect(() => {
+    const fetchResources = async () => {
+      const data = await getClassname();
+      setResources(data);
+    };
+    fetchResources();
+  }, []);
 
   const RightTitle = () => {
     const [teacher, setTeacher] = useState<{ label: string; value: string }[]>([]);

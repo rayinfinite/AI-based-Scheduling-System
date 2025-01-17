@@ -22,13 +22,6 @@ export default defineConfig({
         // 手动控制代码拆分
         manualChunks: {
           react: ["react", "react-dom"],
-          fullcalendar: [
-            "@fullcalendar/core",
-            "@fullcalendar/daygrid",
-            "@fullcalendar/interaction",
-            "@fullcalendar/react",
-            "@fullcalendar/timegrid",
-          ],
         },
       },
     },

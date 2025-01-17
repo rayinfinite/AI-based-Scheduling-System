@@ -18,6 +18,11 @@ public class ClassroomService {
         return classroomRepository.findAllByOrderByIdAsc();
     }
 
+    public List<String> getAllClassroomNames() {
+        List<Classroom> classrooms = classroomRepository.findAllByOrderByIdAsc();
+        return classrooms.stream().map(Classroom::getName).toList();
+    }
+
     public Classroom updateClassroom(Classroom classroom) {
         return classroomRepository.save(classroom);
     }
