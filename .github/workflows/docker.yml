@@ -1,4 +1,4 @@
-name: Project CICD with Maven and npm
+name: Upload to DockerHub
 
 on:
   push:
@@ -42,3 +42,5 @@ jobs:
           context: .
           push: true
           tags: ray2/scheduler:latest
+          secrets: |
+            "AZURE_SECRET=${{ secrets.AZURE_SECRET }}"
