@@ -1,5 +1,6 @@
 FROM openjdk:21-jdk-slim-buster
 
+ARG AZURE_SECRET
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV JAVA_OPTS="-XX:+UseZGC -XX:+ZGenerational"
 ENV AZURE_OPTS="-Dspring.cloud.azure.active-directory.credential.client-secret=${AZURE_SECRET}"
