@@ -27,4 +27,4 @@ spring:
         credential:
           client-id: f3ee6226-fd8b-4cae-a9e7-f3c211b0970b
           client-secret:
-        post-logout-redirect-uri: http://localhost:9000
+        redirect-uri-template: https://www.aicourse-iss.online/login/oauth2/code/
