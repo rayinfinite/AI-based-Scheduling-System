@@ -90,8 +90,8 @@ class AppServiceTest {
 
         // 执行测试 - 无教师过滤
         List<Course> result1 = appService.findByCourseDateBetween(
-            "2024-03-20T00:00:00+08:00",
-            "2024-03-21T00:00:00+08:00",
+            "2024-03-20T00:00:00.000Z",
+            "2024-03-21T00:00:00.000Z",
             null,
             null
         );
@@ -99,8 +99,8 @@ class AppServiceTest {
 
         // 执行测试 - 有教师过滤
         List<Course> result2 = appService.findByCourseDateBetween(
-            "2024-03-20T00:00:00+08:00",
-            "2024-03-21T00:00:00+08:00",
+                "2024-03-20T00:00:00.000Z",
+                "2024-03-21T00:00:00.000Z",
             Arrays.asList("Teacher1"),
             null
         );

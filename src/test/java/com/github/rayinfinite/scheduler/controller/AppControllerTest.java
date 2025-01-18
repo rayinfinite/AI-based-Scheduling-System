@@ -2,6 +2,7 @@ package com.github.rayinfinite.scheduler.controller;
 
 import com.github.rayinfinite.scheduler.entity.Course;
 import com.github.rayinfinite.scheduler.service.AppService;
+import com.github.rayinfinite.scheduler.service.ClassroomService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,6 +29,9 @@ class AppControllerTest {
 
     @MockitoBean
     private AppService appService;
+
+    @MockitoBean
+    private ClassroomService classroomService;
 
     @Test
     @WithMockUser
