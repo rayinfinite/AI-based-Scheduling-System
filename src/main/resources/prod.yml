@@ -1,0 +1,5 @@
+spring:
+  cloud:
+    azure:
+      active-directory:
+        redirect-uri-template: https://www.aicourse-iss.online/login/oauth2/code/

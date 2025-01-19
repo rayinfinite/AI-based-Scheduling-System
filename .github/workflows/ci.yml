@@ -1,4 +1,4 @@
-name: Project CICD with Maven and npm
+name: Project Testing with Maven and npm
 
 on:
   push:
@@ -31,9 +31,9 @@ jobs:
         run: mvn -B package --file pom.xml
       - name: Maven Test
         run: mvn -B test --file pom.xml
-      - name: Copy backend files
-        run: |
-          cp ./target/scheduler-0.0.1.jar ./docker/scheduler-0.0.1.jar
+#      - name: Copy backend files
+#        run: |
+#          cp ./target/scheduler-0.0.1.jar ./docker/scheduler-0.0.1.jar
 #      - name: Copy files via SSH
 #        uses: appleboy/scp-action@master
 #        with:

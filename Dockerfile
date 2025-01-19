@@ -1,4 +1,9 @@
-FROM openjdk:21-jdk-slim-buster
+FROM alpine:3.21
+
+RUN apk update \
+  && apk upgrade \
+  && apk add --no-cache openjdk21-jdk \
+  && rm -rf /var/cache/apk/*
 
 ENV SPRING_PROFILES_ACTIVE=prod
 ENV JAVA_OPTS="-XX:+UseZGC -XX:+ZGenerational --spring.profiles.active=${SPRING_PROFILES_ACTIVE}"

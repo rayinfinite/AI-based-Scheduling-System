@@ -1,8 +1,8 @@
-name: Upload to DockerHub
+name: Project CI with Maven and npm and upload to DockerHub
 
 on:
   push:
-    branches: [ "main", "frontend" ]
+    branches: [ "main" ]
 
 jobs:
   build:
