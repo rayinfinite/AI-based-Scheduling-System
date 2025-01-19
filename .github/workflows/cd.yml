@@ -1,5 +1,8 @@
 name: Project CD with Docker
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
 
@@ -9,7 +12,7 @@ jobs:
 
     steps:
       - name: Stop and rerun docker container
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOST }}
           username: ubuntu

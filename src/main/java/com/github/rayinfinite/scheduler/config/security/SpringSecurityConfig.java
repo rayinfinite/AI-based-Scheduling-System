@@ -28,7 +28,8 @@ public class SpringSecurityConfig {
         //    level:
         //       org.springframework.security: DEBUG
         // 表单登录/登出、session管理、csrf防护等默认配置，如果不disable。会默认创建默认filter
-        http.formLogin(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable).logout(AbstractHttpConfigurer::disable).sessionManagement(AbstractHttpConfigurer::disable).csrf(AbstractHttpConfigurer::disable)
+        http.formLogin(AbstractHttpConfigurer::disable).httpBasic(AbstractHttpConfigurer::disable).logout(AbstractHttpConfigurer::disable).sessionManagement(AbstractHttpConfigurer::disable)
+                //.csrf(AbstractHttpConfigurer::disable)
                 // requestCache用于重定向，前后端分析项目无需重定向，requestCache也用不上
                 .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 // 无需给用户一个匿名身份
