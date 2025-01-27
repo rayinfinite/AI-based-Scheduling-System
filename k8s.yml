@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scheduler
+  template:
+    metadata:
+      labels:
+        app: scheduler
+    spec:
+      containers:
+        - name: scheduler
+          image: ray2/course-main:latest
+          ports:
+            - containerPort: 9003
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: scheduler
+spec:
+  selector:
+    app: scheduler
+  ports:
+    - protocol: TCP
+      port: 9003
+      targetPort: 9003
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: algorithm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: algorithm
+  template:
+    metadata:
+      labels:
+        app: algorithm
+    spec:
+      containers:
+        - name: algorithm
+          image: ray2/course-algorithm:latest
+          ports:
+            - containerPort: 9002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: algorithm
+spec:
+  selector:
+    app: algorithm
+  ports:
+    - protocol: TCP
+      port: 9002
+      targetPort: 9002
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: ray2/course-auth:latest
+          env:
+            - name: AZURE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: azure-secret
+          ports:
+            - containerPort: 9001
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: auth-secrets
+type: Opaque
+data:
+  azure-secret: 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth
+spec:
+  selector:
+    app: auth
+  ports:
+    - protocol: TCP
+      port: 9001
+      targetPort: 9001
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: ray2/course-gateway:latest
+          ports:
+            - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+spec:
+  selector:
+    app: gateway
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  type: ClusterIP

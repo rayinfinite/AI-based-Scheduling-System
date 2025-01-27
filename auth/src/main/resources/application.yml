@@ -1,0 +1,26 @@
+spring:
+  security.oauth2.client:
+    provider:
+      azure:
+        #        https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration
+        #        issuer-uri: https://login.microsoftonline.com/common/v2.0
+        authorization-uri: https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+        token-uri: https://login.microsoftonline.com/common/oauth2/v2.0/token
+        jwk-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
+        user-info-uri: https://graph.microsoft.com/oidc/userinfo
+        user-name-attribute: name
+    registration:
+      azure:
+        provider: azure
+        client-id: f3ee6226-fd8b-4cae-a9e7-f3c211b0970b
+        client-secret: {AZURE_SECRET}
+        redirect-uri: "http://localhost:9000/login/oauth2/code/"
+        authorization-grant-type: authorization_code
+        scope:
+          - openid
+          - profile
+          - offline_access
+public-key: {PUBLIC_KEY}
+private-key: {PRIVATE_KEY}
+success-url: http://localhost:9000
+

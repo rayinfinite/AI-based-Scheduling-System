@@ -1,0 +1,69 @@
+volumes:
+  pg-data:
+  redis-data:
+
+services:
+  pgsql:
+    container_name: pgsql
+    image: bitnami/postgresql:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: scheduler
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+  redis:
+    container_name: redis
+    image: bitnami/redis:7.4
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+  scheduler:
+    image: ray2/course-main:latest
+    container_name: scheduler
+    environment:
+      SERVER_PORT: 9003
+      DB_HOST: pgsql
+      DB_PASSWORD: ${DB_PASSWORD}
+      PUBLIC_KEY: ${PUBLIC_KEY}
+    ports:
+      - "9003:9003"
+    depends_on:
+      - pgsql
+      - redis
+  algorithm:
+    image: ray2/course-algorithm:latest
+    container_name: algorithm
+    environment:
+      SERVER_PORT: 9002
+      DB_HOST: pgsql
+      DB_PASSWORD: ${DB_PASSWORD}
+      PUBLIC_KEY: ${PUBLIC_KEY}
+    ports:
+      - "9002:9002"
+    depends_on:
+      - pgsql
+      - redis
+  auth:
+    image: ray2/course-auth:latest
+    container_name: auth
+    environment:
+      SERVER_PORT: 9001
+      AZURE_SECRET: ${AZURE_SECRET}
+      PUBLIC_KEY: ${PUBLIC_KEY}
+      PRIVATE_KEY: ${PRIVATE_KEY}
+      URL: ${URL}
+    ports:
+      - "9001:9001"
+  gateway:
+    image: ray2/course-gateway:latest
+    container_name: gateway
+    environment:
+      SERVER_PORT: 9000
+    ports:
+      - "9000:9000"

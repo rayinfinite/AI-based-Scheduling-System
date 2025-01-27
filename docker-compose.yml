@@ -1,0 +1,47 @@
+services:
+  scheduler:
+    image: ray2/course-main:latest
+    container_name: scheduler
+    build:
+      context: ./scheduler
+    environment:
+      SERVER_PORT: 9003
+      DB_HOST: pgsql
+      DB_PASSWORD: ${DB_PASSWORD}
+      PUBLIC_KEY: ${PUBLIC_KEY}
+    ports:
+      - "9003:9003"
+  algorithm:
+    image: ray2/course-algorithm:latest
+    container_name: algorithm
+    build:
+      context: ./algorithm
+    environment:
+      SERVER_PORT: 9002
+      DB_HOST: pgsql
+      DB_PASSWORD: ${DB_PASSWORD}
+      PUBLIC_KEY: ${PUBLIC_KEY}
+    ports:
+      - "9002:9002"
+  auth:
+    image: ray2/course-auth:latest
+    container_name: auth
+    build:
+      context: ./auth
+    environment:
+      SERVER_PORT: 9001
+      AZURE_SECRET: ${AZURE_SECRET}
+      PUBLIC_KEY: ${PUBLIC_KEY}
+      PRIVATE_KEY: ${PRIVATE_KEY}
+      URL: ${URL}
+    ports:
+      - "9001:9001"
+  gateway:
+    image: ray2/course-gateway:latest
+    container_name: gateway
+    build:
+      context: ./gateway
+    environment:
+      SERVER_PORT: 9000
+    ports:
+      - "9000:9000"

@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:scheduler}
+    driverClassName: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 300000
+      connection-timeout: 5000
+      validation-timeout: 5000
+      keepalive-time: 300000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties.hibernate.format_sql: true
+public-key: ${PUBLIC_KEY}

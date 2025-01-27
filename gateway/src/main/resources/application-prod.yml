@@ -1,0 +1,16 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth_service
+          uri: http://auth:9001
+          predicates:
+            - Path=/login, /login/**, /logout, /oauth2/authorization/**
+        - id: algorithm_service
+          uri: http://algorithm:9002
+          predicates:
+            - Path=/upload, /download
+        - id: classroom_service
+          uri: http://scheduler:9003
+          predicates:
+            - Path=/**

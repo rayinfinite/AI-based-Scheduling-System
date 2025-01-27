@@ -1,0 +1,5 @@
+spring.security.oauth2.client:
+  registration:
+    azure:
+      redirect-uri: ${URL}/login/oauth2/code/
+success-url: ${URL}
