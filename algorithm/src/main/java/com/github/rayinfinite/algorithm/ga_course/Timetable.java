@@ -6,28 +6,28 @@ import com.github.rayinfinite.algorithm.utils.PublicHoliday;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.security.SecureRandom;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
 public class Timetable {
-    @Getter
+    private final SecureRandom secureRandom = new SecureRandom();
     private final Map<Integer, Classroom> rooms;
     private final Map<Integer, Course> courses;
     private final Map<Integer, Cohort> cohorts;
     private final Map<Integer, Timeslot> timeslots;
     private final Map<Integer, Professor> professors;
 
-    @Getter
     private TeachingPlan[] plans;
 
     private int plansNum = 0;
 
     //浅拷贝，用于适应度计算
+    @SuppressWarnings("CopyConstructorMissesField")
     public Timetable(Timetable cloneable) {
         this.rooms = cloneable.getRooms();
         this.courses = cloneable.getCourses();
@@ -77,7 +77,8 @@ public class Timetable {
                         Timeslot timeslot = this.getTimeslot(timeslotId);
                         int dayOfWeek = getDayOfWeekFromDate(timeslot.getDate());
 
-                        LocalDate scheduledLocalDate = timeslot.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                        LocalDate scheduledLocalDate =
+                                timeslot.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
                         // 根据 cohortType 检查 timeslot 是否合适
                         if (("0".equals(cohortType) && (dayOfWeek == 6 || dayOfWeek == 0)) ||
@@ -165,8 +166,7 @@ public class Timetable {
     }
 
     public Timeslot getTimeslot(int timeslotId) {
-        Timeslot timeslot = this.timeslots.get(Math.min(timeslotId, getMaxTimeslotId()));
-        return timeslot;
+        return this.timeslots.get(Math.min(timeslotId, getMaxTimeslotId()));
     }
 
 
@@ -407,9 +407,10 @@ public class Timetable {
                     DayOfWeek dayOfWeek = localDate.getDayOfWeek();
                     return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY; // 过滤工作日
                 })
-                .collect(Collectors.toList());
-        return weekdaySlots.get(new Random().nextInt(weekdaySlots.size()));
+                .toList();
+        return weekdaySlots.get(secureRandom.nextInt(weekdaySlots.size()));
     }
+
 
     public Timeslot getRandomFridaySaturdayTimeslot() {
         List<Timeslot> fridaySaturdaySlots = this.timeslots.values().stream()
@@ -418,8 +419,14 @@ public class Timetable {
                     DayOfWeek dayOfWeek = localDate.getDayOfWeek();
                     return dayOfWeek == DayOfWeek.FRIDAY || dayOfWeek == DayOfWeek.SATURDAY; // 过滤周五和周六
                 })
-                .collect(Collectors.toList());
-        return fridaySaturdaySlots.get(new Random().nextInt(fridaySaturdaySlots.size()));
+                .toList();
+        return fridaySaturdaySlots.get(secureRandom.nextInt(fridaySaturdaySlots.size()));
     }
+
+    public void setPlans(TeachingPlan[] plans) {
+        this.plans = plans;
+        this.plansNum = plans.length;
+    }
+
 
 }

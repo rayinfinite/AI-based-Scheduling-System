@@ -1,6 +1,5 @@
 package com.github.rayinfinite.algorithm.config.security;
 
-import com.github.rayinfinite.algorithm.config.CorsConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

@@ -3,6 +3,17 @@ volumes:
   redis-data:
 
 services:
+  nginx:
+    container_name: nginx
+    image: nginx:1.26-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./domain:/domain
+    depends_on:
+      - gateway
   pgsql:
     container_name: pgsql
     image: bitnami/postgresql:17
@@ -12,12 +23,14 @@ services:
       POSTGRES_DB: scheduler
     volumes:
       - pg-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
     restart: unless-stopped
   redis:
     container_name: redis
-    image: bitnami/redis:7.4
+    image: redis:7-alpine
+    command: redis-server --requirepass ${DB_PASSWORD}
     ports:
       - "6379:6379"
     volumes:
@@ -25,7 +38,7 @@ services:
     restart: unless-stopped
   scheduler:
     image: ray2/course-main:latest
-    container_name: scheduler
+    container_name: course-scheduler
     environment:
       SERVER_PORT: 9003
       DB_HOST: pgsql
@@ -38,7 +51,7 @@ services:
       - redis
   algorithm:
     image: ray2/course-algorithm:latest
-    container_name: algorithm
+    container_name: course-algorithm
     environment:
       SERVER_PORT: 9002
       DB_HOST: pgsql
@@ -51,7 +64,7 @@ services:
       - redis
   auth:
     image: ray2/course-auth:latest
-    container_name: auth
+    container_name: course-auth
     environment:
       SERVER_PORT: 9001
       AZURE_SECRET: ${AZURE_SECRET}
@@ -62,7 +75,7 @@ services:
       - "9001:9001"
   gateway:
     image: ray2/course-gateway:latest
-    container_name: gateway
+    container_name: course-gateway
     environment:
       SERVER_PORT: 9000
     ports:

@@ -1,4 +1,4 @@
-package com.github.rayinfinite.auth.config;
+package com.github.rayinfinite.auth.config.security;
 
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -21,6 +21,7 @@ public class CorsConfig implements WebMvcConfigurer {
             "Authorization",
             "Accept",
             "X-Requested-With",
+            "X-XSRF-Token",
             "Content-Type",
             "Access-Control-Request-Method",
             "Access-Control-Request-Headers"};

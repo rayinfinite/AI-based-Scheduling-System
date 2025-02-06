@@ -1,6 +1,5 @@
 package com.github.rayinfinite.scheduler.config.security;
 
-import com.github.rayinfinite.scheduler.config.CorsConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

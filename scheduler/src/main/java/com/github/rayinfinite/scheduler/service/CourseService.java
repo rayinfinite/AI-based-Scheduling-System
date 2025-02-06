@@ -4,6 +4,7 @@ import com.github.rayinfinite.scheduler.entity.Course;
 import com.github.rayinfinite.scheduler.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -16,10 +17,11 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AppService {
+public class CourseService {
     private final CourseRepository courseRepository;
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
+    @Cacheable("course")
     public List<Course> findByCourseDateBetween(String startDate, String endDate, List<String> teachers, List<String> cohorts) throws ParseException {
         Date start = formatter.parse(startDate);
         Date end = formatter.parse(endDate);
@@ -35,6 +37,7 @@ public class AppService {
         return data;
     }
 
+    @Cacheable("teacher")
     public List<String> getAllTeachers() {
         List<String> list = new ArrayList<>();
         list.addAll(courseRepository.findTeacher1());
@@ -44,6 +47,7 @@ public class AppService {
                 .distinct().sorted().toList();
     }
 
+    @Cacheable("cohort")
     public List<String> getAllCohorts() {
         return courseRepository.findCohort();
     }

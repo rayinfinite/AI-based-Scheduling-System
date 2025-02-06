@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,19 +30,19 @@ import java.util.Base64;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Value("${public-key}")
-    private String PUBLIC_KEY;
+    private String publicKeyBase64;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@Nonnull HttpServletRequest request,
+                                    @Nonnull HttpServletResponse response,
+                                    @Nonnull FilterChain filterChain) throws ServletException, IOException {
         // 从 request 获取 JWT token
         String token = getTokenFromRequest(request);
         // 校验 token
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC")
-                        .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(PUBLIC_KEY)));
+                        .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyBase64)));
                 Algorithm algorithm = Algorithm.ECDSA256(publicKey, null);
                 JWTVerifier verifier = JWT.require(algorithm)
                         .withIssuer("AIcourse")
@@ -52,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String name = jwt.getClaim("name").asString();
                 String email = jwt.getClaim("email").asString();
                 String oid = jwt.getClaim("oid").asString();
-                log.debug("\nSubject: {},\nName: {},\nEmail: {},\nOID: {}", sub,name,email,oid);
+                log.debug("\nSubject: {},\nName: {},\nEmail: {},\nOID: {}", sub, name, email, oid);
                 UserDetails userDetails = new UserInfoDetails(name, email, oid, sub);
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,

@@ -12,6 +12,12 @@ spring:
       connection-timeout: 5000
       validation-timeout: 5000
       keepalive-time: 300000
+  data.redis:
+    host: ${REDIS_HOST:redis}
+    port: ${REDIS_PORT:6379}
+    password: ${DB_PASSWORD}
+    timeout: 3s
+    connect-timeout: 3s
   jpa:
     hibernate:
       ddl-auto: update

@@ -30,9 +30,9 @@ import java.util.*;
 @RequestMapping("/login")
 public class LoginController {
     @Value("${public-key}")
-    private String PUBLIC_KEY;
+    private String publicKeyBase64;
     @Value("${private-key}")
-    private String PRIVATE_KEY;
+    private String privateKeyBase64;
 
     @GetMapping
     public boolean login(@AuthenticationPrincipal OidcUser principal) {
@@ -68,10 +68,10 @@ public class LoginController {
         OidcIdToken idToken = principal.getIdToken();
         Map<String, Object> claims = idToken.getClaims();
         try {
-            ECPublicKey publicKey =
-                    (ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(PUBLIC_KEY)));
-            ECPrivateKey privateKey =
-                    (ECPrivateKey) KeyFactory.getInstance("EC").generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(PRIVATE_KEY)));
+            ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC")
+                    .generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyBase64)));
+            ECPrivateKey privateKey = (ECPrivateKey) KeyFactory.getInstance("EC")
+                    .generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKeyBase64)));
             Algorithm algorithm = Algorithm.ECDSA256(publicKey, privateKey);
             String token = JWT.create()
                     .withExpiresAt(idToken.getExpiresAt())

@@ -1,22 +1,17 @@
 # microservice version of AI-based Scheduling System
 
 ```shell
- docker-compose build  
- docker-compose push
-```
-
-```shell
-docker image prune -f 
+docker-compose build
+docker-compose push
 ```
 
 ## deploy method:
-send the docker-compose file and .env file to the server
+send the **/deploy** folder to the server
 ```shell
-scp ./deploy.docker-compose.yml ubuntu@aicourse:~/docker-compose.yml
-scp ./.env ubuntu@aicourse:~/.env
+scp -r ./deploy ubuntu@aicourse:~
 ```
 
 run the following command on the server
 ```shell
-sudo docker compose up -d
+cd ~/deploy && sudo sh ./deploy.sh
 ```
