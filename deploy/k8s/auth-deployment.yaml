@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ai-course
+    io.kompose.service: auth
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: auth
+  template:
+    metadata:
+      labels:
+        io.kompose.service: auth
+    spec:
+      containers:
+        - env:
+            - name: AZURE_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: AZURE_SECRET
+            - name: PRIVATE_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: PRIVATE_KEY
+            - name: PUBLIC_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: PUBLIC_KEY
+            - name: SERVER_PORT
+              value: "9001"
+            - name: URL
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: URL
+          image: ray2/course-auth:latest
+          name: course-auth
+          ports:
+            - containerPort: 9001
+              protocol: TCP
+      restartPolicy: Always

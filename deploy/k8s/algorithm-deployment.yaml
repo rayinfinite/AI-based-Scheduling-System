@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ai-course
+    io.kompose.service: algorithm
+  name: algorithm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: algorithm
+  template:
+    metadata:
+      labels:
+        io.kompose.service: algorithm
+    spec:
+      containers:
+        - env:
+            - name: DB_HOST
+              value: pgsql
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: DB_PASSWORD
+            - name: PUBLIC_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: PUBLIC_KEY
+            - name: SERVER_PORT
+              value: "9002"
+            - name: REDIS_PORT
+              value: "6379"
+          image: ray2/course-algorithm:latest
+          name: course-algorithm
+          ports:
+            - containerPort: 9002
+              protocol: TCP
+      restartPolicy: Always

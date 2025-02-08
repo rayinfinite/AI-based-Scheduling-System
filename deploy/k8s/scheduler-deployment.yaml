@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ai-course
+    io.kompose.service: scheduler
+  name: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: scheduler
+  template:
+    metadata:
+      labels:
+        io.kompose.service: scheduler
+    spec:
+      containers:
+        - env:
+            - name: DB_HOST
+              value: pgsql
+            - name: DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: DB_PASSWORD
+            - name: PUBLIC_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: course-configmap
+                  key: PUBLIC_KEY
+            - name: SERVER_PORT
+              value: "9003"
+            - name: REDIS_PORT
+              value: "6379"
+          image: ray2/course-main:latest
+          name: course-scheduler
+          ports:
+            - containerPort: 9003
+              protocol: TCP
+      restartPolicy: Always

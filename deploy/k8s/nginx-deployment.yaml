@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ai-course
+    io.kompose.service: nginx
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nginx
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: nginx
+    spec:
+      containers:
+        - image: nginx:1.26-alpine
+          name: nginx
+          ports:
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-conf
+            - mountPath: /domain
+              name: domain-volume
+      restartPolicy: Always
+      volumes:
+        - name: nginx-conf
+          hostPath:
+            path: /home/ubuntu/deploy/nginx.conf
+        - name: domain-volume
+          hostPath:
+            path: /home/ubuntu/deploy/domain
+            type: Directory

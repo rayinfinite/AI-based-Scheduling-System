@@ -13,12 +13,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -30,6 +32,20 @@ public class AlgorithmService {
     private final ClassroomService classroomService;
     private final GAService gaService;
     private final Lock lock = new ReentrantLock();
+    private final StringRedisTemplate redisTemplate;
+
+    public void evictCaches() {
+        // 定义要清除的缓存前缀列表
+        String[] cacheNames = {"course", "teacher", "cohort"};
+
+        for (String cacheName : cacheNames) {
+            // 使用keys命令匹配所有以cacheName为前缀的key，并删除它们
+            Set<String> keys = redisTemplate.keys(cacheName + "*");
+            if (keys != null && !keys.isEmpty()) {
+                redisTemplate.delete(keys);
+            }
+        }
+    }
 
     @CacheEvict(value = {"course", "teacher", "cohort"}, allEntries = true)
     public String upload(MultipartFile file) throws IOException {
@@ -90,6 +106,7 @@ public class AlgorithmService {
         courseRepository.deleteAll();
         courseRepository.saveAll(courseList);
         log.info("{} Data saved to database", courseList.size());
+        evictCaches();
     }
 
     public void gap(List<Course> courseList, List<Cohort> cohortList, List<Timeslot> timeslotList) {
@@ -97,6 +114,7 @@ public class AlgorithmService {
         courseRepository.deleteAll();
         courseRepository.saveAll(result);
         log.info("{} Data saved to database", result.size());
+        evictCaches();
     }
 
     public void downloadExcel(HttpServletResponse response) throws IOException {
