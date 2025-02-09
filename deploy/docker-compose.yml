@@ -44,8 +44,8 @@ services:
       DB_HOST: pgsql
       DB_PASSWORD: ${DB_PASSWORD}
       PUBLIC_KEY: ${PUBLIC_KEY}
-    ports:
-      - "9003:9003"
+    expose:
+      - "9003"
     depends_on:
       - pgsql
       - redis
@@ -57,8 +57,8 @@ services:
       DB_HOST: pgsql
       DB_PASSWORD: ${DB_PASSWORD}
       PUBLIC_KEY: ${PUBLIC_KEY}
-    ports:
-      - "9002:9002"
+    expose:
+      - "9002"
     depends_on:
       - pgsql
       - redis
@@ -67,12 +67,11 @@ services:
     container_name: course-auth
     environment:
       SERVER_PORT: 9001
-      AZURE_SECRET: ${AZURE_SECRET}
-      PUBLIC_KEY: ${PUBLIC_KEY}
-      PRIVATE_KEY: ${PRIVATE_KEY}
-      URL: ${URL}
-    ports:
-      - "9001:9001"
+      DB_HOST: pgsql
+    env_file:
+      - .env
+    expose:
+      - "9001"
   gateway:
     image: ray2/course-gateway:latest
     container_name: course-gateway

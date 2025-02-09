@@ -3,7 +3,11 @@ package com.github.rayinfinite.auth.controller;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.github.rayinfinite.auth.config.exception.BusinessException;
 import com.github.rayinfinite.auth.entity.Response;
+import com.github.rayinfinite.auth.utils.LoginUtil;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,17 +30,32 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/login")
+@RequiredArgsConstructor
 public class LoginController {
+    private final LoginUtil loginUtil;
     @Value("${public-key}")
     private String publicKeyBase64;
     @Value("${private-key}")
     private String privateKeyBase64;
 
     @GetMapping
-    public boolean login(@AuthenticationPrincipal OidcUser principal) {
-        return principal != null;
+    public String login(@AuthenticationPrincipal OidcUser principal) {
+        if (principal == null) {
+            return "false";
+        }
+        Map<String, Object> claim = principal.getIdToken().getClaims();
+        String username = claim.get("name").toString();
+        String email = claim.get("preferred_username").toString();
+        try {
+            loginUtil.checkLogin(username, email);
+        } catch (BusinessException e) {
+            log.error(e.getMessage());
+            return "Not Authorized";
+        }
+        return "true";
     }
 
     @GetMapping("/user")
@@ -63,7 +82,10 @@ public class LoginController {
     @GetMapping("/jwt")
     public Response jwt(@AuthenticationPrincipal OidcUser principal) {
         if (principal == null) {
-            return null;
+            return new Response();
+        }
+        if(!login(principal).equals("true")){
+            return new Response();
         }
         OidcIdToken idToken = principal.getIdToken();
         Map<String, Object> claims = idToken.getClaims();

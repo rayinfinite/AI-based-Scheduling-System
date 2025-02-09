@@ -9,9 +9,11 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Getter
 public class Individual {
+    private final Random random = new Random();
     private int[] chromosome;
     @Setter
     private double fitness = -1;
@@ -19,14 +21,13 @@ public class Individual {
     public Individual(int chromosomeLength) {
         this.chromosome = new int[chromosomeLength];
         for (int gene = 0; gene < chromosomeLength; gene++) {
-            if (0.5 < Math.random()) {
+            if (0.5 < random.nextDouble()) {
                 this.setGene(gene, 1);
             } else {
                 this.setGene(gene, 0);
             }
         }
     }
-
 
     public Individual(Timetable timetable) {
         int plansNum = timetable.getPlansNum(timetable);
@@ -43,27 +44,27 @@ public class Individual {
         int newChromosome[] = new int[chromosomeLength];
         int chromosomeIndex = 0;
 
-        for (Cohort cohort : timetable.getCohorts().values()) { // 新增初始化个体就分全日和非全，优化性能
+        for (Cohort cohort : timetable.getCohorts().values()) { // Newly initialised individuals are divided into full-time and part-time to optimise performance.
             String cohortType = cohort.getCohortType();
             for (int courseId : cohort.getCourseIds()) {
                 Course course = timetable.getCourse(courseId);
                 int timeslotId;
                 if ("0".equals(cohortType)) {
-                    timeslotId = timetable.getRandomWeekdayTimeslot().getId(); // 工作日
+                    timeslotId = timetable.getRandomWeekdayTimeslot().getId(); // working days
                 } else if ("1".equals(cohortType)) {
-                    timeslotId = timetable.getRandomFridaySaturdayTimeslot().getId(); // 周五或周六
+                    timeslotId = timetable.getRandomFridaySaturdayTimeslot().getId(); // Friday or Saturday
                 } else {
                     throw new IllegalArgumentException("Invalid cohortType: " + cohortType);
                 }
                 newChromosome[chromosomeIndex] = timeslotId;
                 chromosomeIndex++;
 
-                // 随机分配教室
+                // Random assignment of classrooms
                 int roomId = timetable.getRandomRoom().getId();
                 newChromosome[chromosomeIndex] = roomId;
                 chromosomeIndex++;
 
-                // 获取教授信息
+                // Getting information about professors
                 int professorNum = course.getProfessorNum();
                 int[] professorIds = course.getTeacherIds();
 
@@ -74,15 +75,15 @@ public class Individual {
                     professorList.add(id);
                 }
 
-                // 打乱教授列表顺序
+                // Disrupting the order of professors' lists
                 Collections.shuffle(professorList);
 
-                // 为课程分配教授
+                // Assigning professors to courses
                 for (int i = 0; i < 3; i++) {
                     if (i < professorNum) {
                         newChromosome[chromosomeIndex] = professorList.get(i);
                     } else {
-                        newChromosome[chromosomeIndex] = -1; // 如果没有足够的教授，设置为 -1
+                        newChromosome[chromosomeIndex] = -1; // If there aren't enough professors, set it to -1
                     }
                     chromosomeIndex++;
                 }

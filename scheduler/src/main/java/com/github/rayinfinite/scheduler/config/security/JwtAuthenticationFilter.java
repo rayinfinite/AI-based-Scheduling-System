@@ -36,9 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain) throws ServletException, IOException {
-        // 从 request 获取 JWT token
+        // Retrieve JWT token from request
         String token = getTokenFromRequest(request);
-        // 校验 token
+        // validate token
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
                 ECPublicKey publicKey = (ECPublicKey) KeyFactory.getInstance("EC")

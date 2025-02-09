@@ -30,6 +30,8 @@ services:
       context: ./auth
     environment:
       SERVER_PORT: 9001
+      DB_HOST: pgsql
+      DB_PASSWORD: ${DB_PASSWORD}
       AZURE_SECRET: ${AZURE_SECRET}
       PUBLIC_KEY: ${PUBLIC_KEY}
       PRIVATE_KEY: ${PRIVATE_KEY}

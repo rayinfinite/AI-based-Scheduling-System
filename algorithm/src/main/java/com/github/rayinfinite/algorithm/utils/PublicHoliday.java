@@ -50,7 +50,6 @@ public class PublicHoliday {
         return isPublicHoliday(date) ? holidays.get(date) : null;
     }
 
-    //TODO: retry network request if failed
     private static synchronized void parseDownloadedIcsContent(int year) throws IOException, ParserException {
         String urlString = ICS_URL.replace("2025", String.valueOf(year));
         if (parsedYears.contains(year)) {

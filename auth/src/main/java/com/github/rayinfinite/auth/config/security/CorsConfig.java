@@ -50,14 +50,14 @@ public class CorsConfig implements WebMvcConfigurer {
     }
 
     /**
-     * 全局配置Spring Controller序列化
+     * Global Configuration Spring Controller Serialisation
      */
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
-        // 数字相关的类型，全部格式化成字符串
+        // Formatted all numeric related types as strings
         objectMapper.configure(JsonWriteFeature.WRITE_NUMBERS_AS_STRINGS.mappedFeature(), true);
-        // 当json传来多余的字段过来，反序列化时不抛异常
+        // No exception is thrown when deserialising json when extra fields are passed in.
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         return objectMapper;
     }

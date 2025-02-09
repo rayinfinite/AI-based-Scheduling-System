@@ -9,7 +9,7 @@ spring:
         - id: algorithm_service
           uri: http://algorithm:9002
           predicates:
-            - Path=/upload, /download
+            - Path=/upload, /download, /resultUpload, /upload/**
         - id: classroom_service
           uri: http://scheduler:9003
           predicates:

@@ -1,4 +1,17 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:scheduler}
+    driverClassName: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 300000
+      connection-timeout: 5000
+      validation-timeout: 5000
+      keepalive-time: 300000
   security.oauth2.client:
     provider:
       azure:
@@ -8,12 +21,12 @@ spring:
         token-uri: https://login.microsoftonline.com/common/oauth2/v2.0/token
         jwk-set-uri: https://login.microsoftonline.com/common/discovery/v2.0/keys
         user-info-uri: https://graph.microsoft.com/oidc/userinfo
-        user-name-attribute: name
+        user-name-attribute: sub
     registration:
       azure:
         provider: azure
-        client-id: f3ee6226-fd8b-4cae-a9e7-f3c211b0970b
-        client-secret: {AZURE_SECRET}
+        client-id: ${AZURE_CLIENT_ID}
+        client-secret: ${AZURE_SECRET}
         redirect-uri: "http://localhost:9000/login/oauth2/code/"
         authorization-grant-type: authorization_code
         scope:

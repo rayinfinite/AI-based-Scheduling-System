@@ -25,12 +25,12 @@ public class RedisConfig {
 
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        // 定义默认的缓存配置
+        // Defining the Default Cache Configuration
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(60))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(redisSerializer()));
 
-        // 如果有特定缓存需要不同的过期时间，可以在这里定义
+        // If there is a specific cache that requires a different expiration time, you can define the
         Map<String, RedisCacheConfiguration> cacheConfigurations = new HashMap<>();
 
         return RedisCacheManager.builder(redisConnectionFactory)
@@ -46,12 +46,12 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // 使用 StringRedisSerializer 来序列化 key
+        // Serialising a key with StringRedisSerializer
         template.setKeySerializer(new StringRedisSerializer());
-        // 使用 GenericJackson2JsonRedisSerializer 来序列化 value
+        // Use GenericJackson2JsonRedisSerializer to serialise the value.
         template.setValueSerializer(redisSerializer());
 
-        // 如果您还打算使用哈希数据结构（Hash），请确保也设置了哈希键和值的序列化器
+        // If you also intend to use hashed data structures (hashes), make sure that the serialiser for hashed keys and values is also set up
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(redisSerializer());
 

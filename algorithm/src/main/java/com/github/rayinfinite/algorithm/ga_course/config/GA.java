@@ -11,6 +11,7 @@ public class GA {
     private final double mutationRate;
     private final double crossoverRate;
     private final int elitismCount;
+    private final Random random = new Random();
 
     public GA(int populationSize, double mutationRate, double crossoverRate, int elitismCount, int tournamentSize) {
         this.populationSize = populationSize;
@@ -53,7 +54,7 @@ public class GA {
         return (generationsCount > maxGenerations);
     }
 
-//	//均匀交叉
+//Uniform Crossover
 //	public Population crossoverPopulation(Population population) {
 //		Population newPopulation = new Population(population.size());
 //		for(int populationIndex = 0; populationIndex < population.size(); populationIndex++) {
@@ -76,12 +77,12 @@ public class GA {
 //		return newPopulation;
 //	}
 
-    //锦标赛选父母
+    //Tournament Selection of Parents
     public Individual selectParent(Population population) {
         Population tournament = new Population(this.tournamentSize);
         Random random = new SecureRandom();
 
-        // 随机选择 tournamentSize 个个体放入锦标赛种群
+        // Randomly select tournamentSize individuals to be placed in the tournament population.
         for (int i = 0; i < this.tournamentSize; i++) {
             int randomIndex = random.nextInt(population.size());
             Individual tournamentIndividual = population.getIndividual(randomIndex);
@@ -98,12 +99,12 @@ public class GA {
         for (int populationIndex = 0; populationIndex < population.size(); populationIndex++) {
             Individual parent1 = population.getFittest(populationIndex);
 
-            if (this.crossoverRate > Math.random() && populationIndex >= this.elitismCount) {
+            if (this.crossoverRate > random.nextDouble() && populationIndex >= this.elitismCount) {
                 Individual offspring = new Individual(chromosomeLength);
                 Individual parent2 = this.selectParent(population);
 
                 // Generate random swap point
-                int swapPoint = (int) (Math.random() * (chromosomeLength + 1));
+                int swapPoint = random.nextInt(chromosomeLength + 1);
 
                 // Perform single-point crossover
                 for (int geneIndex = 0; geneIndex < chromosomeLength; geneIndex++) {
@@ -130,7 +131,7 @@ public class GA {
             Individual randomIndividual = new Individual(timetable);
 
             for (int geneIndex = 0; geneIndex < individual.getChromosomeLength(); geneIndex++) {
-                if (populationIndex > this.elitismCount && this.mutationRate > Math.random()) {
+                if (populationIndex > this.elitismCount && this.mutationRate > random.nextDouble()) {
                     individual.setGene(geneIndex, randomIndividual.getGene(geneIndex));
                 }
             }

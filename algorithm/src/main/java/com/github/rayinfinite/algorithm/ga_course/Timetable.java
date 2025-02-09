@@ -6,7 +6,6 @@ import com.github.rayinfinite.algorithm.utils.PublicHoliday;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.security.SecureRandom;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -15,19 +14,16 @@ import java.util.*;
 @Slf4j
 @Getter
 public class Timetable {
-    private final SecureRandom secureRandom = new SecureRandom();
     private final Map<Integer, Classroom> rooms;
     private final Map<Integer, Course> courses;
     private final Map<Integer, Cohort> cohorts;
     private final Map<Integer, Timeslot> timeslots;
     private final Map<Integer, Professor> professors;
-
+    private final Random random = new Random();
     private TeachingPlan[] plans;
-
     private int plansNum = 0;
 
-    //浅拷贝，用于适应度计算
-    @SuppressWarnings("CopyConstructorMissesField")
+    //Shallow copy for fitness calculation
     public Timetable(Timetable cloneable) {
         this.rooms = cloneable.getRooms();
         this.courses = cloneable.getCourses();
@@ -80,13 +76,13 @@ public class Timetable {
                         LocalDate scheduledLocalDate =
                                 timeslot.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-                        // 根据 cohortType 检查 timeslot 是否合适
+                        // Check if the timeslot is appropriate according to cohortType.
                         if (("0".equals(cohortType) && (dayOfWeek == 6 || dayOfWeek == 0)) ||
                                 ("1".equals(cohortType) && (dayOfWeek >= 1 && dayOfWeek <= 4 || dayOfWeek == 0)) ||
                                 usedTimeslotIds.contains(timeslotId) || PublicHoliday.isPublicHoliday(scheduledLocalDate)) {
-                            timeslotId++; // 跳到下一个 timeslot
+                            timeslotId++; // Skip to next timeslot
                         } else {
-                            break; // 找到合适的 timeslotId，退出循环
+                            break; // Find the right timeslotId, exit the loop
                         }
                     }
 
@@ -94,7 +90,7 @@ public class Timetable {
                         timeslotId = chromosome[chromosomePos];
                     }
 
-                    usedTimeslotIds.add(timeslotId); // 记录当前课程的已使用 timeslotId
+                    usedTimeslotIds.add(timeslotId); // Records the current course's used timeslotId
                     plans[planIndex].addTimeslot(timeslotId);
 
                     if (dayOffset == 0) {
@@ -121,7 +117,6 @@ public class Timetable {
         }
         this.plans = plans;
     }
-
 
     public List<Course> getCoursesByCohortId(int cohortId) {
         List<Course> cohortCourses = new ArrayList<>();
@@ -150,7 +145,7 @@ public class Timetable {
 
     public Classroom getRandomRoom() {
         Object[] roomsArray = this.rooms.values().toArray();
-        return (Classroom) roomsArray[(int) (roomsArray.length * Math.random())];
+        return (Classroom) roomsArray[(random.nextInt(roomsArray.length))];
     }
 
     public Course getCourse(int courseId) {
@@ -183,14 +178,14 @@ public class Timetable {
         clashCategories.put("Cohort Time Restriction", new ArrayList<TeachingPlan>());
         clashCategories.put("Public Holiday Conflict", new ArrayList<TeachingPlan>());
 
-        // 根据 roomId 和 timeslotId 分组
+        // Grouping by roomId and timeslotId
         Map<Integer, List<TeachingPlan>> roomTimeslotMap = new HashMap<>();
         for (TeachingPlan plan : this.plans) {
             int key = plan.getRoomId() * 1000 + plan.getTimeslotId(); // 简单的键生成方式
             roomTimeslotMap.computeIfAbsent(key, k -> new ArrayList<>()).add(plan);
         }
 
-        // 容量检查：遍历一次所有计划
+        // Capacity check: traverse all plans once
         for (TeachingPlan plan : this.plans) {
             int roomCapacity = this.getRoom(plan.getRoomId()).getSize();
             int cohortSize = this.getCohort(plan.getCohortId()).getCohortSize();
@@ -199,7 +194,7 @@ public class Timetable {
             }
         }
 
-        // 检查房间与时间段的冲突
+        // Checking room conflicts with time slots
         for (List<TeachingPlan> group : roomTimeslotMap.values()) {
             for (int i = 0; i < group.size(); i++) {
                 TeachingPlan planA = group.get(i);
@@ -213,7 +208,7 @@ public class Timetable {
             }
         }
 
-        // 检查教授的冲突
+        // Examining the Professor's Conflict
         Map<Integer, List<TeachingPlan>> professorTimeslotMap = new HashMap<>();
         for (TeachingPlan plan : this.plans) {
             int professorNum = this.getCourse(plan.getCourseId()).getProfessorNum();
@@ -233,7 +228,7 @@ public class Timetable {
             }
         }
 
-        // 检查教授时间段冲突
+        // Check for conflicts in professor's time slot
         for (List<TeachingPlan> group : professorTimeslotMap.values()) {
             if (group.size() > 1) {
                 for (TeachingPlan plan : group) {
@@ -242,7 +237,7 @@ public class Timetable {
             }
         }
 
-        // 根据 cohortType 限制排课时间段
+        // Limit scheduling time slots based on cohortType
         for (TeachingPlan plan : this.plans) {
             int cohortId = plan.getCohortId();
             Cohort cohort = this.getCohort(cohortId);
@@ -253,20 +248,20 @@ public class Timetable {
             DayOfWeek dayOfWeek = localDate.getDayOfWeek();
 
             if ("0".equals(cohortType)) {
-                // cohortType 为 "0" 时，只能安排在周一到周五
+                // When cohortType is "0", it can only be scheduled from Monday to Friday.
                 if (!(dayOfWeek.equals(DayOfWeek.MONDAY) || dayOfWeek.equals(DayOfWeek.TUESDAY) ||
                         dayOfWeek.equals(DayOfWeek.WEDNESDAY) || dayOfWeek.equals(DayOfWeek.THURSDAY) ||
                         dayOfWeek.equals(DayOfWeek.FRIDAY))) {
                     ((List<TeachingPlan>) clashCategories.get("Cohort Time Restriction")).add(plan);
                 }
             } else if ("1".equals(cohortType)) {
-                // cohortType 为 "1" 时，只能安排在周五和周六
+                // When cohortType is "1", only Fridays and Saturdays can be scheduled.
                 if (!(dayOfWeek.equals(DayOfWeek.FRIDAY) || dayOfWeek.equals(DayOfWeek.SATURDAY))) {
                     ((List<TeachingPlan>) clashCategories.get("Cohort Time Restriction")).add(plan);
                 }
             }
         }
-        // 检查节假日
+        // Checking holidays
         for (TeachingPlan plan : this.plans) {
             Date scheduledDate = this.getTimeslot(plan.getTimeslotId()).getDate();
             LocalDate scheduledLocalDate = scheduledDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -278,43 +273,42 @@ public class Timetable {
         return clashCategories;
     }
 
-
     public int calcPenalty() {
         int penalty = 0;
 
-        // 根据 roomId 和 timeslotId 分组
+        // Grouping by roomId and timeslotId
         Map<Integer, List<TeachingPlan>> roomTimeslotMap = new HashMap<>();
         for (TeachingPlan plan : this.plans) {
             int key = plan.getRoomId() * 1000 + plan.getTimeslotId(); // 简单的键生成方式
             roomTimeslotMap.computeIfAbsent(key, k -> new ArrayList<>()).add(plan);
         }
 
-        // 容量硬约束
+        // Capacity hard constraints
         for (TeachingPlan plan : this.plans) {
             int roomCapacity = this.getRoom(plan.getRoomId()).getSize();
             int cohortSize = this.getCohort(plan.getCohortId()).getCohortSize();
             if (roomCapacity < cohortSize) {
-                penalty += 100; // 惩罚值
+                penalty += 100; // penalty value
             }
-            if (roomCapacity > 100) { // 大教室惩罚
+            if (roomCapacity > 100) { // Punishment in a large classroom
                 penalty += 5;
             }
         }
 
-        // 房间和时间段冲突硬约束
+        // Hard constraints on room and time slot conflicts
         for (List<TeachingPlan> group : roomTimeslotMap.values()) {
             for (int i = 0; i < group.size(); i++) {
                 TeachingPlan planA = group.get(i);
                 for (int j = i + 1; j < group.size(); j++) {
                     TeachingPlan planB = group.get(j);
                     if (planA.getPlanId() != planB.getPlanId()) {
-                        penalty += 100; // 惩罚值
+                        penalty += 100; // penalty value
                     }
                 }
             }
         }
 
-        // 教授时间段冲突硬约束
+        // Conflict hard constraints on the professor's time period
         Map<Integer, List<TeachingPlan>> professorTimeslotMap = new HashMap<>();
         for (TeachingPlan plan : this.plans) {
             int professorNum = this.getCourse(plan.getCourseId()).getProfessorNum();
@@ -334,14 +328,14 @@ public class Timetable {
             }
         }
 
-        // 检查教授时间段冲突
+        // Check for conflicts in professor's time slot
         for (List<TeachingPlan> group : professorTimeslotMap.values()) {
             if (group.size() > 1) {
-                penalty += (group.size() - 1) * 100; // 增加冲突的惩罚值
+                penalty += (group.size() - 1) * 100;
             }
         }
 
-        // 根据 cohortType 限制排课时间段
+        // Limit scheduling time slots based on cohortType
         for (TeachingPlan plan : this.plans) {
             int cohortId = plan.getCohortId();
             Cohort cohort = this.getCohort(cohortId);
@@ -352,16 +346,16 @@ public class Timetable {
             DayOfWeek dayOfWeek = localDate.getDayOfWeek();
 
             if ("0".equals(cohortType)) {
-                // cohortType 为 "0" 时，只能安排在周一到周五
+                // When cohortType is "0", it can only be scheduled from Monday to Friday.
                 if (!(dayOfWeek.equals(DayOfWeek.MONDAY) || dayOfWeek.equals(DayOfWeek.TUESDAY) ||
                         dayOfWeek.equals(DayOfWeek.WEDNESDAY) || dayOfWeek.equals(DayOfWeek.THURSDAY) ||
                         dayOfWeek.equals(DayOfWeek.FRIDAY))) {
-                    penalty += 100; // 不符合要求的时间段，增加惩罚值
+                    penalty += 100;
                 }
             } else if ("1".equals(cohortType)) {
-                // cohortType 为 "1" 时，只能安排在周五和周六
+                // When cohortType is "1", only Fridays and Saturdays can be scheduled.
                 if (!(dayOfWeek.equals(DayOfWeek.FRIDAY) || dayOfWeek.equals(DayOfWeek.SATURDAY))) {
-                    penalty += 100; // 不符合要求的时间段，增加惩罚值
+                    penalty += 100;
                 }
             }
         }
@@ -370,23 +364,23 @@ public class Timetable {
             Date scheduledDate = this.getTimeslot(plan.getTimeslotId()).getDate();
             LocalDate scheduledLocalDate = scheduledDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             if (PublicHoliday.isPublicHoliday(scheduledLocalDate)) {
-                penalty += 100; // 在节假日排课，增加较大惩罚值
+                penalty += 100; // Scheduling classes on holidays, adding larger penalty values
             }
         }
 
-        // 收集所有已排课的时间段（days）
+        // Collection of all scheduled time slots (days)
         Set<Integer> scheduledDays = new HashSet<>();
         for (TeachingPlan plan : this.plans) {
             scheduledDays.add(plan.getTimeslotId());
         }
-        // 将时间段转换为列表并排序
+        // Convert time periods to lists and sort them
         List<Integer> sortedDays = new ArrayList<>(scheduledDays);
         Collections.sort(sortedDays);
-        // 检查时间段之间的间隔
+        // Check the interval between time periods
         for (int i = 1; i < sortedDays.size(); i++) {
             int gap = sortedDays.get(i) - sortedDays.get(i - 1);
             if (gap > 7) {
-                penalty += 5; // 或者根据需要调整惩罚值
+                penalty += 5;
             }
         }
 
@@ -397,7 +391,7 @@ public class Timetable {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-        return dayOfWeek == Calendar.SUNDAY ? 0 : dayOfWeek - 1; // 将SUNDAY映射为0，其他为1-6
+        return dayOfWeek == Calendar.SUNDAY ? 0 : dayOfWeek - 1; // Maps SUNDAY to 0, others to 1-6
     }
 
     public Timeslot getRandomWeekdayTimeslot() {
@@ -405,28 +399,25 @@ public class Timetable {
                 .filter(slot -> {
                     LocalDate localDate = slot.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                     DayOfWeek dayOfWeek = localDate.getDayOfWeek();
-                    return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY; // 过滤工作日
+                    return dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY; // Filtering workdays
                 })
                 .toList();
-        return weekdaySlots.get(secureRandom.nextInt(weekdaySlots.size()));
+        return weekdaySlots.get(random.nextInt(weekdaySlots.size()));
     }
-
 
     public Timeslot getRandomFridaySaturdayTimeslot() {
         List<Timeslot> fridaySaturdaySlots = this.timeslots.values().stream()
                 .filter(slot -> {
                     LocalDate localDate = slot.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                     DayOfWeek dayOfWeek = localDate.getDayOfWeek();
-                    return dayOfWeek == DayOfWeek.FRIDAY || dayOfWeek == DayOfWeek.SATURDAY; // 过滤周五和周六
+                    return dayOfWeek == DayOfWeek.FRIDAY || dayOfWeek == DayOfWeek.SATURDAY; // Filter Friday and Saturday
                 })
                 .toList();
-        return fridaySaturdaySlots.get(secureRandom.nextInt(fridaySaturdaySlots.size()));
+        return fridaySaturdaySlots.get(random.nextInt(fridaySaturdaySlots.size()));
     }
 
     public void setPlans(TeachingPlan[] plans) {
         this.plans = plans;
         this.plansNum = plans.length;
     }
-
-
 }
