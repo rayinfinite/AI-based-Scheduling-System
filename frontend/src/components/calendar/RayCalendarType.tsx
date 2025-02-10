@@ -13,7 +13,7 @@ export interface RayCalendarProps {
   weekStartsOn?: number; // 0 for Sunday, 1 for Monday, etc.
   showOutsideDays?: boolean; // Show days from the previous and next month
   fixedWeeks?: boolean; // Always show 6 weeks
-  fetchEvents?: (start: Date, end: Date, timeZone: string) => Promise<EventInfo[]>;
+  fetchEvents: (start: Date, end: Date, timeZone: string) => Promise<EventInfo[]>;
   eventContent?: (event: EventInfo) => JSX.Element;
   eventClick?: (event: EventInfo) => void;
   resourceHeader?: string; // Header for the resource column
@@ -35,4 +35,5 @@ export interface CalendarApi {
   nextYear: () => void;
   incrementDays: (duration: number) => void;
   changeView: (value: string) => void;
+  refreshEvents?: () => void;
 }

@@ -1,8 +1,8 @@
 package com.github.rayinfinite.scheduler.controller;
 
-import java.util.List;
-import java.util.Map;
-
+import com.github.rayinfinite.scheduler.repository.AuditLogRepository;
+import com.github.rayinfinite.scheduler.repository.UserRepository;
+import com.github.rayinfinite.scheduler.utils.LoginUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,42 +12,47 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.ott.OneTimeTokenAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.aot.DisabledInAotMode;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.ContentResultMatchers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @ContextConfiguration(classes = {LoginController.class})
 @ExtendWith(SpringExtension.class)
+@DisabledInAotMode
 class LoginControllerDiffblueTest {
     @Autowired
     private LoginController loginController;
 
+    @MockitoBean
+    private LoginUtil loginUtil;
+
     /**
-     * Test {@link LoginController#login(Authentication)}.
+     * Test {@link LoginController#login(OidcUser)}.
+     * <ul>
+     *   <li>When {@code null}.</li>
+     *   <li>Then return {@code false}.</li>
+     * </ul>
      * <p>
-     * Method under test: {@link LoginController#login(Authentication)}
+     * Method under test: {@link LoginController#login(OidcUser)}
      */
     @Test
-    @DisplayName("Test login(Authentication)")
-    void testLogin() throws Exception {
-        // Arrange
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/login");
+    @DisplayName("Test login(OidcUser); when 'null'; then return 'false'")
+    void testLogin_whenNull_thenReturnFalse() {
+        //   Diffblue Cover was unable to create a Spring-specific test for this Spring method.
+        //   Run dcover create --keep-partial-tests to gain insights into why
+        //   a non-Spring test was created.
 
-        // Act and Assert
-        ResultActions resultActions = MockMvcBuilders.standaloneSetup(loginController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"));
-        ContentResultMatchers contentResult = MockMvcResultMatchers.content();
-        resultActions.andExpect(contentResult.string(Boolean.FALSE.toString()));
+        // Arrange, Act and Assert
+        assertFalse(
+                (new LoginController(new LoginUtil(mock(AuditLogRepository.class), mock(UserRepository.class)))).login(null));
     }
 
     /**
@@ -67,7 +72,8 @@ class LoginControllerDiffblueTest {
         //   a non-Spring test was created.
 
         // Arrange and Act
-        ResponseEntity<Map<String, Object>> actualUser = (new LoginController()).getUser(null);
+        ResponseEntity<Map<String, Object>> actualUser = (new LoginController(
+                new LoginUtil(mock(AuditLogRepository.class), mock(UserRepository.class)))).getUser(null);
 
         // Assert
         HttpStatusCode statusCode = actualUser.getStatusCode();
@@ -95,7 +101,8 @@ class LoginControllerDiffblueTest {
         //   a non-Spring test was created.
 
         // Arrange
-        LoginController loginController = new LoginController();
+        LoginController loginController = new LoginController(
+                new LoginUtil(mock(AuditLogRepository.class), mock(UserRepository.class)));
 
         // Act
         ResponseEntity<Map<String, Object>> actualUser = loginController

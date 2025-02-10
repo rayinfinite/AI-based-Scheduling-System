@@ -11,6 +11,7 @@ public class GA {
     private final double mutationRate;
     private final double crossoverRate;
     private final int elitismCount;
+    private final Random random = new Random();
 
     public GA(int populationSize, double mutationRate, double crossoverRate, int elitismCount, int tournamentSize) {
         this.populationSize = populationSize;
@@ -93,25 +94,27 @@ public class GA {
 
     public Population crossoverPopulation(Population population) {
         Population newPopulation = new Population(population.size());
+        int chromosomeLength = population.getIndividual(0).getChromosomeLength();
 
         for (int populationIndex = 0; populationIndex < population.size(); populationIndex++) {
             Individual parent1 = population.getFittest(populationIndex);
 
-            if (this.crossoverRate > Math.random() && populationIndex >= this.elitismCount) {
-
-                Individual offspring = new Individual(parent1.getChromosomeLength());
-
+            if (this.crossoverRate > random.nextDouble() && populationIndex >= this.elitismCount) {
+                Individual offspring = new Individual(chromosomeLength);
                 Individual parent2 = this.selectParent(population);
 
-                int swapPoint = (int) (Math.random() * (parent1.getChromosomeLength() + 1));
+                // Generate random swap point
+                int swapPoint = random.nextInt(chromosomeLength + 1);
 
-                for (int geneIndex = 0; geneIndex < parent1.getChromosomeLength(); geneIndex++) {
+                // Perform single-point crossover
+                for (int geneIndex = 0; geneIndex < chromosomeLength; geneIndex++) {
                     if (geneIndex < swapPoint) {
                         offspring.setGene(geneIndex, parent1.getGene(geneIndex));
                     } else {
                         offspring.setGene(geneIndex, parent2.getGene(geneIndex));
                     }
                 }
+
                 newPopulation.setIndividual(populationIndex, offspring);
             } else {
                 newPopulation.setIndividual(populationIndex, parent1);
@@ -128,7 +131,7 @@ public class GA {
             Individual randomIndividual = new Individual(timetable);
 
             for (int geneIndex = 0; geneIndex < individual.getChromosomeLength(); geneIndex++) {
-                if (populationIndex > this.elitismCount && this.mutationRate > Math.random()) {
+                if (populationIndex > this.elitismCount && this.mutationRate > random.nextDouble()) {
                     individual.setGene(geneIndex, randomIndividual.getGene(geneIndex));
                 }
             }

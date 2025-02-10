@@ -1,5 +1,5 @@
-spring:
-  cloud:
+spring.security.oauth2.client:
+  registration:
     azure:
-      active-directory:
-        redirect-uri-template: https://www.aicourse-iss.online/login/oauth2/code/
+      redirect-uri: https://www.aicourse-iss.online/login/oauth2/code/
+success-url: https://www.aicourse-iss.online

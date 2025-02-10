@@ -1,5 +1,46 @@
 export const ROOT_PATH = process.env.NODE_ENV === "production" ? "" : "http://localhost:9000";
 
+const getCsrfToken = () => {
+  const csrfToken = document.cookie.match("(^|;)\\s*XSRF-TOKEN\\s*=\\s*([^;]+)")?.pop();
+  return csrfToken || "";
+};
+
+export default function request(url: string, options: RequestInit = {}) {
+  const headers: Record<string, string> = options.headers ? { ...(options.headers as Record<string, string>) } : {};
+  if (options.method === "POST" && !(options.body instanceof FormData)) {
+    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+  }
+
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...headers,
+      "X-XSRF-Token": getCsrfToken(),
+      Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+    },
+  })
+    .then((response) => {
+      if (response.status == 401) {
+        window.location.href = `${ROOT_PATH}/oauth2/authorization/azure`;
+      }
+      if (!response.ok) {
+        throw new Error(`网络请求失败，状态码：${response.status}`);
+      }
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      }
+      return response;
+    })
+    .then((data) => {
+      return data.data || data;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      throw error;
+    });
+}
+
 export async function getCalenderData(startStr: string, endStr: string, teachers: string[], students: string[]) {
   const params = new URLSearchParams({
     startStr,
@@ -7,10 +48,9 @@ export async function getCalenderData(startStr: string, endStr: string, teachers
     teachers: teachers.join(","),
     students: students.join(","),
   }).toString();
-  return await fetch(`${ROOT_PATH}/data?${params}`)
-    .then((response) => response.json())
+  return await request(`${ROOT_PATH}/data?${params}`)
     .then((data) => {
-      const events = data.data;
+      const events = data;
       events.forEach((event: any) => {
         event.title = event.courseName;
         event.resource = event.classroom;
@@ -28,21 +68,11 @@ export async function getCalenderData(startStr: string, endStr: string, teachers
 }
 
 export async function getAllTeachers() {
-  return await fetch(`${ROOT_PATH}/teacher`)
-    .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    })
-    .catch((error) => console.error("Error:", error));
+  return await request(`${ROOT_PATH}/teacher`);
 }
 
 export async function getAllStudents() {
-  return await fetch(`${ROOT_PATH}/student`)
-    .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    })
-    .catch((error) => console.error("Error:", error));
+  return await request(`${ROOT_PATH}/student`);
 }
 
 export interface ClassroomType {
@@ -53,39 +83,63 @@ export interface ClassroomType {
 }
 
 export async function getClassroom(): Promise<ClassroomType[]> {
-  return await fetch(`${ROOT_PATH}/classroom`)
-    .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    })
-    .catch((error) => console.error("Error:", error));
+  return await request(`${ROOT_PATH}/classroom`);
 }
 
 export async function saveClassroom(data: ClassroomType) {
-  return await fetch(`${ROOT_PATH}/classroom`, {
+  return await request(`${ROOT_PATH}/classroom`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(data),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    })
-    .catch((error) => console.error("Error:", error));
+  });
 }
 
 export async function deleteClassroom(id: number) {
-  return await fetch(`${ROOT_PATH}/classroom/${id}`, {
+  return await request(`${ROOT_PATH}/classroom/${id}`, {
     method: "DELETE",
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    })
-    .catch((error) => console.error("Error:", error));
+  });
 }
+
+export async function getClassname(): Promise<string[]> {
+  return await request(`${ROOT_PATH}/classname`);
+}
+
+export const uploadExcel = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return await request(`${ROOT_PATH}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const uploadResultExcel = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return await request(`${ROOT_PATH}/resultUpload`, {
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const downloadExcel = async () => {
+  const response = await request(`${ROOT_PATH}/download`);
+
+  if (!response.ok) {
+    throw new Error("Download failed");
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Course.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+};
 
 export async function getUser(): Promise<boolean> {
   return await fetch(`${ROOT_PATH}/login`)
@@ -93,27 +147,17 @@ export async function getUser(): Promise<boolean> {
     .catch((error) => console.error("Error:", error));
 }
 
-export async function getClassname(): Promise<string[]> {
-  return await fetch(`${ROOT_PATH}/classname`)
+export async function getUserToken() {
+  return await fetch(`${ROOT_PATH}/login/token_details`)
     .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    })
     .catch((error) => console.error("Error:", error));
 }
 
-export const uploadExcel = async (file: File) => {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const response = await fetch(`${ROOT_PATH}/upload`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error("Upload failed");
-  }
-
-  return response.json();
-};
+export async function getJwtToken() {
+  return await fetch(`${ROOT_PATH}/login/jwt`)
+    .then((response) => response.json())
+    .then((data) => {
+      localStorage.setItem("token", data.data);
+    })
+    .catch((error) => console.error("Error:", error));
+}

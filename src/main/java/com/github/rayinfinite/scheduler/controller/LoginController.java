@@ -1,10 +1,14 @@
 package com.github.rayinfinite.scheduler.controller;
 
+import com.github.rayinfinite.scheduler.utils.LoginUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,10 +22,19 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/login")
+@RequiredArgsConstructor
 public class LoginController {
+    private final LoginUtil loginUtil;
+
     @GetMapping
-    public boolean login(Authentication authentication) {
-        return authentication != null;
+    public boolean login(@AuthenticationPrincipal OidcUser principal) {
+        if(principal != null){
+            Map<String, Object> claim = principal.getIdToken().getClaims();
+            String username = claim.get("name").toString();
+            String email = claim.get("preferred_username").toString();
+            loginUtil.checkLogin(username, email);
+        }
+        return principal != null;
     }
 
     @GetMapping("/user")
@@ -37,7 +50,12 @@ public class LoginController {
 
     @GetMapping("/token_details")
     public Map<String, String> tokenDetails(@AuthenticationPrincipal OidcUser principal) {
-        return filterClaims(principal);
+        return principal == null ? Map.of("name", "test") : filterClaims(principal);
+    }
+
+    @GetMapping("/token")
+    public String token(@RegisteredOAuth2AuthorizedClient OAuth2AuthorizedClient authorizedClient) {
+        return authorizedClient.getAccessToken().getTokenValue();
     }
 
     public Map<String, String> filterClaims(OidcUser principal) {

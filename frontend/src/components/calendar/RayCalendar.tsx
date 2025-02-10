@@ -10,7 +10,7 @@ import {
   Day,
   isSameMonth,
 } from "date-fns";
-import { useImperativeHandle, forwardRef, useState, useMemo, useEffect, useRef } from "react";
+import { useImperativeHandle, forwardRef, useState, useMemo, useEffect, useRef, useCallback } from "react";
 import RayCalendarTable from "./RayCalendarTable";
 import RayCalendarToolbar from "./RayCalendarToolbar";
 import { CalendarApi, EventInfo, RayCalendarProps } from "./RayCalendarType";
@@ -34,6 +34,7 @@ const Calendar = forwardRef<CalendarApi, RayCalendarProps>((props, ref) => {
   const [date, setDate] = useState(new Date());
   const [events, setEvents] = useState<EventInfo[]>([]);
   const [view, setView] = useState("Month");
+  const [refresh, setRefresh] = useState(false);
 
   const { adjustedWeekdays, grid, start, end, title } = useMemo(() => {
     const adjustedWeekdays = WEEKDAYS.slice(weekStartsOn).concat(WEEKDAYS.slice(0, weekStartsOn));
@@ -107,6 +108,7 @@ const Calendar = forwardRef<CalendarApi, RayCalendarProps>((props, ref) => {
       nextYear: () => setDate(addMonths(date, 12)),
       incrementDays: (duration: number) => setDate(addDays(date, duration)),
       changeView: (value: string) => setView(value),
+      refreshEvents: () => setRefresh(true),
     }),
     [date, title, view]
   );
@@ -115,17 +117,28 @@ const Calendar = forwardRef<CalendarApi, RayCalendarProps>((props, ref) => {
 
   const prevStartRef = useRef<Date | null>(null);
   const prevEndRef = useRef<Date | null>(null);
-  
+
+  const fetchFunc = useCallback(() => {
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    fetchEvents(start, end, timeZone).then((events) => {
+      setEvents(events);
+      prevStartRef.current = start;
+      prevEndRef.current = end;
+    });
+  }, [start, end, fetchEvents]);
+
   useEffect(() => {
-    if (fetchEvents && (prevStartRef.current !== start || prevEndRef.current !== end)) {
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      fetchEvents(start, end, timeZone).then((events) => {
-        setEvents(events);
-        prevStartRef.current = start;
-        prevEndRef.current = end;
-      });
+    if (prevStartRef.current !== start || prevEndRef.current !== end) {
+      fetchFunc();
     }
-  }, [fetchEvents, start, end]);
+  }, [fetchEvents, start, end, fetchFunc]);
+
+  useEffect(() => {
+    if (refresh) {
+      fetchFunc();
+      setRefresh(false);
+    }
+  }, [refresh, fetchFunc]);
 
   return (
     <div>

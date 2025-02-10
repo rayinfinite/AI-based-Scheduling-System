@@ -2,6 +2,8 @@ package com.github.rayinfinite.scheduler.excel;
 
 import com.alibaba.excel.converters.Converter;
 import com.alibaba.excel.converters.ReadConverterContext;
+import com.alibaba.excel.converters.WriteConverterContext;
+import com.alibaba.excel.metadata.data.WriteCellData;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,5 +40,10 @@ public class DateConverter implements Converter<Date> {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    @Override
+    public WriteCellData<?> convertToExcelData(WriteConverterContext<Date> context) {
+        return new WriteCellData<>(formatter.format(context.getValue()));
     }
 }

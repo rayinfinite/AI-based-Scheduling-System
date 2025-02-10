@@ -1,5 +1,6 @@
 package com.github.rayinfinite.scheduler.ga_course.config;
 
+import com.github.rayinfinite.scheduler.entity.Cohort;
 import com.github.rayinfinite.scheduler.entity.Course;
 import com.github.rayinfinite.scheduler.ga_course.Timetable;
 import lombok.Getter;
@@ -8,17 +9,19 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Getter
 public class Individual {
-    private final int[] chromosome;
+    private final Random random = new Random();
+    private int[] chromosome;
     @Setter
     private double fitness = -1;
 
     public Individual(int chromosomeLength) {
         this.chromosome = new int[chromosomeLength];
         for (int gene = 0; gene < chromosomeLength; gene++) {
-            if (0.5 < Math.random()) {
+            if (0.5 < random.nextDouble()) {
                 this.setGene(gene, 1);
             } else {
                 this.setGene(gene, 0);
@@ -31,52 +34,62 @@ public class Individual {
         int chromosomeLength = plansNum * 5;
 
         for (Course course : timetable.getCourses().values()) {
-//          int run = course.getRun();
+//            int run = course.getRun();
             int duration = course.getDuration();
             int length1 = (duration - 1) * 5;
             chromosomeLength += length1 * 5;
 //			chromosomeLength += (run - 1) * length1;
         }
 
-        int[] newChromosome = new int[chromosomeLength];
+        int newChromosome[] = new int[chromosomeLength];
         int chromosomeIndex = 0;
 
-        for (Course course : timetable.getCourses().values()) { // 获取 Timetable 中所有课程
-            // 随机分配时间段
-            int timeslotId = timetable.getRandomTimeslot().getId();
-            newChromosome[chromosomeIndex] = timeslotId;
-            chromosomeIndex++;
-
-            // 随机分配教室
-            int roomId = timetable.getRandomRoom().getId();
-            newChromosome[chromosomeIndex] = roomId;
-            chromosomeIndex++;
-
-            // 获取教授信息
-            int professorNum = course.getProfessorNum();
-            int[] professorIds = course.getTeacherIds();
-
-            professorNum = Math.min(professorNum, professorIds.length);
-
-            List<Integer> professorList = new ArrayList<>();
-            for (int id : professorIds) {
-                professorList.add(id);
-            }
-
-            // 打乱教授列表顺序
-            Collections.shuffle(professorList);
-
-            // 为课程分配教授
-            for (int i = 0; i < 3; i++) {
-                if (i < professorNum) {
-                    newChromosome[chromosomeIndex] = professorList.get(i);
+        for (Cohort cohort : timetable.getCohorts().values()) { // 新增初始化个体就分全日和非全，优化性能
+            String cohortType = cohort.getCohortType();
+            for (int courseId : cohort.getCourseIds()) {
+                Course course = timetable.getCourse(courseId);
+                int timeslotId;
+                if ("0".equals(cohortType)) {
+                    timeslotId = timetable.getRandomWeekdayTimeslot().getId(); // 工作日
+                } else if ("1".equals(cohortType)) {
+                    timeslotId = timetable.getRandomFridaySaturdayTimeslot().getId(); // 周五或周六
                 } else {
-                    newChromosome[chromosomeIndex] = -1; // 如果没有足够的教授，设置为 -1
+                    throw new IllegalArgumentException("Invalid cohortType: " + cohortType);
                 }
+                newChromosome[chromosomeIndex] = timeslotId;
                 chromosomeIndex++;
+
+                // 随机分配教室
+                int roomId = timetable.getRandomRoom().getId();
+                newChromosome[chromosomeIndex] = roomId;
+                chromosomeIndex++;
+
+                // 获取教授信息
+                int professorNum = course.getProfessorNum();
+                int[] professorIds = course.getTeacherIds();
+
+                professorNum = Math.min(professorNum, professorIds.length);
+
+                List<Integer> professorList = new ArrayList<>();
+                for (int id : professorIds) {
+                    professorList.add(id);
+                }
+
+                // 打乱教授列表顺序
+                Collections.shuffle(professorList);
+
+                // 为课程分配教授
+                for (int i = 0; i < 3; i++) {
+                    if (i < professorNum) {
+                        newChromosome[chromosomeIndex] = professorList.get(i);
+                    } else {
+                        newChromosome[chromosomeIndex] = -1; // 如果没有足够的教授，设置为 -1
+                    }
+                    chromosomeIndex++;
+                }
             }
+            this.chromosome = newChromosome;
         }
-        this.chromosome = newChromosome;
     }
 
     public int getChromosomeLength() {

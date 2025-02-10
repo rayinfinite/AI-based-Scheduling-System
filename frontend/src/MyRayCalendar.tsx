@@ -1,7 +1,7 @@
-import { memo, ReactNode, useEffect, useState } from "react";
+import { memo, ReactNode, useEffect, useRef, useState } from "react";
 import { getAllStudents, getAllTeachers, getCalenderData, getClassname } from "./api";
 import RayCalendar from "./components/calendar/RayCalendar";
-import { EventInfo } from "./components/calendar/RayCalendarType";
+import { CalendarApi, EventInfo } from "./components/calendar/RayCalendarType";
 import {
   Dialog,
   DialogContent,
@@ -80,6 +80,7 @@ const EventDetails: React.FC<EventDetailsProps> = memo(({ selectedEvent, handleC
 });
 
 const MyRayCalendar: React.FC = () => {
+  const calendarRef = useRef<CalendarApi>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventInfo | null>(null);
 
   const [selectedTeachers, setSelectedTeachers] = useState<string[]>([]);
@@ -92,6 +93,12 @@ const MyRayCalendar: React.FC = () => {
     const response = await getCalenderData(startString, endString, selectedTeachers, selectedStudents);
     return response;
   };
+
+  useEffect(() => {
+    if (calendarRef.current) {
+      calendarRef.current.refreshEvents?.();
+    }
+  }, [selectedTeachers, selectedStudents]);
 
   const renderEventContent = (eventInfo: EventInfo) => {
     const title = eventInfo.title;
@@ -175,6 +182,7 @@ const MyRayCalendar: React.FC = () => {
   return (
     <>
       <RayCalendar
+        ref={calendarRef}
         fetchEvents={fetchEvents}
         eventContent={renderEventContent}
         eventClick={handleEventClick}

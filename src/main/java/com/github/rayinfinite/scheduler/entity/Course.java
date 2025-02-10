@@ -27,14 +27,12 @@ public class Course {
     @ExcelProperty(converter = IntegerConverter.class)
     Integer duration;
     String software;
-    //    @ExcelIgnore
-    @ExcelProperty(converter = IntegerConverter.class)
+    @ExcelIgnore
     Integer cohortId;
     String cohort;
-    @ExcelProperty(converter = IntegerConverter.class)
+    @ExcelIgnore
     Integer run;
     @ExcelIgnore
-    @ExcelProperty(converter = DateConverter.class)
     Date courseDate;
 
     @ExcelIgnore
@@ -48,7 +46,7 @@ public class Course {
 
     String manager;
     String cert;
-    @ExcelProperty(converter = IntegerConverter.class)
+    @ExcelIgnore
     Integer professorNum;
 
     @ExcelIgnore

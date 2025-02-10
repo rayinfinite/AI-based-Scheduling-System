@@ -1,8 +1,6 @@
 package com.github.rayinfinite.scheduler.service;
 
-import com.github.rayinfinite.scheduler.entity.Cohort;
-import com.github.rayinfinite.scheduler.entity.Course;
-import com.github.rayinfinite.scheduler.entity.Timeslot;
+import com.github.rayinfinite.scheduler.entity.*;
 import com.github.rayinfinite.scheduler.repository.CourseRepository;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -12,7 +10,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,88 +18,46 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class AppServiceTest {
+class CourseServiceTest {
 
     @Mock
     private CourseRepository courseRepository;
 
-    @Mock
-    private ClassroomService classroomService;
-
-    @Mock
-    private GAService gaService;
-
     @InjectMocks
-    private AppService appService;
-
-    @Test
-    void testUpload() throws Exception {
-        // 创建一个有效的 Excel 文件内容
-        MockMultipartFile file = new MockMultipartFile(
-            "file",
-            "test.xlsx",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            ExcelGenerator.createTestExcel()
-        );
-
-        // 执行测试
-        String result = appService.upload(file);
-
-        // 验证结果
-        assertThat(result).isEqualTo("success");
-    }
-
-    @Test
-    void testGap() {
-        // 准备测试数据
-        List<Course> courseList = List.of(new Course());
-        List<Cohort> cohortList = List.of(new Cohort());
-        List<Timeslot> timeslotList = List.of(new Timeslot());
-        List<Course> resultList = List.of(new Course());
-
-        // 设置 mock 行为
-        when(gaService.gap(any(), any(), any(), any())).thenReturn(resultList);
-
-        // 执行测试
-        appService.gap(courseList, cohortList, timeslotList);
-
-        // 验证调用
-        verify(courseRepository).deleteAll();
-        verify(courseRepository).saveAll(resultList);
-        verify(gaService).gap(eq(courseList), eq(cohortList), eq(timeslotList), any());
-    }
+    private CourseService courseService;
 
     @Test
     void testFindByCourseDateBetween() throws Exception {
         // 准备测试数据
         List<Course> courseList = new ArrayList<>(Arrays.asList(
-            createCourse("Teacher1", null, null),
-            createCourse("Teacher2", "Teacher3", null)
+                createCourse("Teacher1", null, null),
+                createCourse("Teacher2", "Teacher3", null)
         ));
 
         // 设置 mock 行为
         when(courseRepository.findByCourseDateBetween(any(), any())).thenReturn(courseList);
 
         // 执行测试 - 无教师过滤
-        List<Course> result1 = appService.findByCourseDateBetween(
-            "2024-03-20T00:00:00.000Z",
-            "2024-03-21T00:00:00.000Z",
-            null,
-            null
+        List<Course> result1 = courseService.findByCourseDateBetween(
+                "2024-03-20T00:00:00.000Z",
+                "2024-03-21T00:00:00.000Z",
+                null,
+                null
         );
         assertThat(result1).hasSize(2);
 
         // 执行测试 - 有教师过滤
-        List<Course> result2 = appService.findByCourseDateBetween(
+        List<Course> result2 = courseService.findByCourseDateBetween(
                 "2024-03-20T00:00:00.000Z",
                 "2024-03-21T00:00:00.000Z",
-            Arrays.asList("Teacher1"),
-            null
+                Arrays.asList("Teacher1"),
+                null
         );
         assertThat(result2).hasSize(1);
     }
@@ -115,13 +70,25 @@ class AppServiceTest {
         when(courseRepository.findTeacher3()).thenReturn(Arrays.asList("Teacher3", "Teacher4"));
 
         // 执行测试
-        List<String> result = appService.getAllTeachers();
+        List<String> result = courseService.getAllTeachers();
 
         // 验证结果
         assertThat(result)
-            .hasSize(4)
-            .containsExactly("Teacher1", "Teacher2", "Teacher3", "Teacher4");
+                .hasSize(4)
+                .containsExactly("Teacher1", "Teacher2", "Teacher3", "Teacher4");
     }
+    @Test
+    void testGetAllCohorts() {
+        // 准备测试数据
+        when(courseRepository.findCohort()).thenReturn(Arrays.asList("Cohort1", "Cohort2"));
+
+        // 执行测试
+        List<String> result = courseService.getAllCohorts();
+
+        // 验证结果
+        assertThat(result).hasSize(2).containsExactly("Cohort1", "Cohort2");
+    }
+
 
     private Course createCourse(String teacher1, String teacher2, String teacher3) {
         Course course = new Course();
@@ -130,6 +97,8 @@ class AppServiceTest {
         course.setTeacher3(teacher3);
         return course;
     }
+
+
 
     // 辅助方法：创建测试用的 Excel 文件
     private static class ExcelGenerator {
@@ -157,4 +126,4 @@ class AppServiceTest {
             }
         }
     }
-} 
+}

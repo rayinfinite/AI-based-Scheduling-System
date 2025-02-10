@@ -60,8 +60,7 @@ class GAServiceTest {
 
         // 验证结果
         assertThat(result).hasSize(2);
-        assertThat(result.get(1)).isEqualTo(course1);
-        assertThat(result.get(2)).isEqualTo(course2);
+        assertThat(result).containsEntry(1, course1).containsEntry(2, course2);
     }
 
     @Test

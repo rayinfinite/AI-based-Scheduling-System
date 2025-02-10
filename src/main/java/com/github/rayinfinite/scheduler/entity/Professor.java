@@ -8,5 +8,4 @@ import lombok.Getter;
 public class Professor {
     private int professorId;
     private String professorName;
-//    private String unavailableDate;
 }

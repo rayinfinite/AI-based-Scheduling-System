@@ -3,6 +3,7 @@ package com.github.rayinfinite.scheduler.controller;
 import com.github.rayinfinite.scheduler.entity.Classroom;
 import com.github.rayinfinite.scheduler.entity.Response;
 import com.github.rayinfinite.scheduler.service.ClassroomService;
+import com.github.rayinfinite.scheduler.utils.LogAction;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +23,14 @@ public class ClassroomController {
         return new Response(data);
     }
 
+    @LogAction
     @PostMapping
     public Response updateClassroom(@RequestBody Classroom classroom) {
         var result = service.updateClassroom(classroom);
         return new Response(result);
     }
 
+    @LogAction
     @DeleteMapping("/{id}")
     public Response deleteClassroom(@PathVariable("id") Integer classroomId) {
         var result = service.deleteClassroom(classroomId);

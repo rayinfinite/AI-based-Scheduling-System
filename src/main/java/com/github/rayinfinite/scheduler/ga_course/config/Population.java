@@ -16,10 +16,10 @@ public class Population {
         this.population = new Individual[populationSize];
     }
 
-    public Population(int pupulationSize, Timetable timetable) {
-        this.population = new Individual[pupulationSize];
+    public Population(int populationSize, Timetable timetable) {
+        this.population = new Individual[populationSize];
 
-        for (int individualCount = 0; individualCount < pupulationSize; individualCount++) {
+        for (int individualCount = 0; individualCount < populationSize; individualCount++) {
             Individual individual = new Individual(timetable);
             this.population[individualCount] = individual;
         }
