@@ -6,12 +6,12 @@ import { getJwtToken, getUser, getUserToken, ROOT_PATH } from "./api";
 import { LogIn } from "lucide-react";
 
 function App() {
-  const [data, setData] = useState<boolean>(false);
+  const [data, setData] = useState<string>("false");
   const [name, setName] = useState<string>("");
 
   useEffect(() => {
     getUser().then((data) => {
-      setData(data);
+      setData(String(data));
       getJwtToken();
     });
   }, []);
@@ -38,7 +38,7 @@ function App() {
     <div className="px-2 sm:px-6 ">
       <div className="flex flex-col items-center justify-between my-5 lg:flex-row">
         <h1>AI Course Scheduling System</h1>
-        {data ? (
+        {data != "false" ? (
           <span>Hello {name}</span>
         ) : (
           <Button onClick={login}>
@@ -47,7 +47,7 @@ function App() {
           </Button>
         )}
       </div>
-      {data && <UploadPage />}
+      {data == "true" && <UploadPage />}
       <MyRayCalendar />
     </div>
   );

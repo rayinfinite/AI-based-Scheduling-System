@@ -5,10 +5,11 @@ interface ButtonProps {
   children?: React.ReactNode;
   onFileChange: (file: File | null) => void;
   accept?: string;
+  disabled?: boolean;
 }
 
 // 自定义的 UploadButton 组件
-const UploadButton: React.FC<ButtonProps> = ({ onFileChange, children, accept = ".xlsx,.xls", ...props }) => {
+const UploadButton: React.FC<ButtonProps> = ({ onFileChange, children, accept = ".xlsx,.xls", disabled, ...props }) => {
   const hiddenFileInput = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -26,7 +27,7 @@ const UploadButton: React.FC<ButtonProps> = ({ onFileChange, children, accept = 
 
   return (
     <>
-      <Button onClick={handleButtonClick} {...props}>
+      <Button onClick={handleButtonClick} disabled={disabled} {...props}>
         {children || <span>Click to Upload</span>}
       </Button>
       <input className="hidden" type="file" accept={accept} onChange={handleFileChange} ref={hiddenFileInput} />

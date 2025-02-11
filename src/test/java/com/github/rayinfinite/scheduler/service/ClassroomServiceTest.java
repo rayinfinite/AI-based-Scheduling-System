@@ -27,7 +27,7 @@ class ClassroomServiceTest {
 
     @Test
     void testGetAllClassrooms() {
-        // 准备测试数据
+        // Preparing Test Data
         Classroom classroom1 = new Classroom();
         classroom1.setId(1);
         classroom1.setName("Room 1");
@@ -38,13 +38,13 @@ class ClassroomServiceTest {
 
         List<Classroom> classrooms = Arrays.asList(classroom1, classroom2);
 
-        // 设置 mock 行为
+        // Setting the mock behaviour
         when(classroomRepository.findAllByOrderByIdAsc()).thenReturn(classrooms);
 
-        // 执行测试
+        // execute a test
         List<Classroom> result = classroomService.getAllClassrooms();
 
-        // 验证结果
+        // Verification results
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getName()).isEqualTo("Room 1");
         assertThat(result.get(1).getName()).isEqualTo("Room 2");
@@ -53,36 +53,36 @@ class ClassroomServiceTest {
 
     @Test
     void testUpdateClassroom() {
-        // 准备测试数据
+        // Preparing Test Data
         Classroom classroom = new Classroom();
         classroom.setId(1);
         classroom.setName("Updated Room");
 
-        // 设置 mock 行为
+        // Setting up mock behaviour
         when(classroomRepository.save(any(Classroom.class))).thenReturn(classroom);
 
-        // 执行测试
+        // execute a test
         Classroom result = classroomService.updateClassroom(classroom);
 
-        // 验证结果
+        // Verification results
         assertThat(result.getName()).isEqualTo("Updated Room");
         verify(classroomRepository).save(classroom);
     }
 
     @Test
     void testDeleteClassroomWhenExists() {
-        // 准备测试数据
+        // Preparing Test Data
         Classroom classroom = new Classroom();
         classroom.setId(1);
         classroom.setName("Room to Delete");
 
-        // 设置 mock 行为
+        // Setting the mock behaviour
         when(classroomRepository.findById(1)).thenReturn(Optional.of(classroom));
 
-        // 执行测试
+        // execute a test
         Classroom result = classroomService.deleteClassroom(1);
 
-        // 验证结果
+        // Verification results
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo("Room to Delete");
         verify(classroomRepository).findById(1);
@@ -91,13 +91,13 @@ class ClassroomServiceTest {
 
     @Test
     void testDeleteClassroomWhenNotExists() {
-        // 设置 mock 行为
+        // Setting the mock behaviour
         when(classroomRepository.findById(1)).thenReturn(Optional.empty());
 
-        // 执行测试
+        // execute a test
         Classroom result = classroomService.deleteClassroom(1);
 
-        // 验证结果
+        // Verification results
         assertThat(result).isNull();
         verify(classroomRepository).findById(1);
         verify(classroomRepository, never()).delete(any());

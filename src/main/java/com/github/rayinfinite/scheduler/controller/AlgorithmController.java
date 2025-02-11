@@ -6,10 +6,15 @@ import com.github.rayinfinite.scheduler.utils.LogAction;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -36,5 +41,15 @@ public class AlgorithmController {
     @GetMapping("/download")
     public void downloadExcel(HttpServletResponse response) throws IOException {
         service.downloadExcel(response);
+    }
+
+    @GetMapping(value = "/upload/status", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Map<String, Boolean>> streamTaskStatus() {
+        return Flux.interval(Duration.ofSeconds(1)) // Push status every second
+                .map(sequence -> {
+                    Map<String, Boolean> status = new HashMap<>();
+                    status.put("running", service.isTaskRunning());
+                    return status;
+                });
     }
 }

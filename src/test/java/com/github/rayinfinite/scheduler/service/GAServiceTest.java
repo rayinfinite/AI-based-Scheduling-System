@@ -29,7 +29,7 @@ class GAServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        // 获取私有方法
+        // Getting Private Methods
         createMapMethod = GAService.class.getDeclaredMethod("createMap", List.class, Function.class);
         createMapMethod.setAccessible(true);
 
@@ -42,7 +42,7 @@ class GAServiceTest {
 
     @Test
     void testCreateMap() throws Exception {
-        // 准备测试数据
+        // Preparing Test Data
         List<Course> courses = new ArrayList<>();
         Course course1 = new Course();
         course1.setId(1);
@@ -51,21 +51,21 @@ class GAServiceTest {
         courses.add(course1);
         courses.add(course2);
 
-        // 创建 Function 对象
+        // Creating a Function Object
         Function<Course, Integer> idFunction = Course::getId;
 
-        // 执行测试
+        // execute a test
         @SuppressWarnings("unchecked")
         Map<Integer, Course> result = (Map<Integer, Course>) createMapMethod.invoke(gaService, courses, idFunction);
 
-        // 验证结果
+        // Verification results
         assertThat(result).hasSize(2);
         assertThat(result).containsEntry(1, course1).containsEntry(2, course2);
     }
 
     @Test
     void testSetCourseCohortId() throws Exception {
-        // 准备测试数据
+        // Preparing Test Data
         List<Course> courses = new ArrayList<>();
         Course course = new Course();
         course.setCohort("Cohort1");
@@ -73,16 +73,16 @@ class GAServiceTest {
 
         Map<Integer, Cohort> cohortMap = Map.of(1, createCohort(1, "Cohort1"));
 
-        // 执行测试
+        // execute a test
         setCourseCohortIdMethod.invoke(gaService, courses, cohortMap);
 
-        // 验证结果
+        // Verification results
         assertThat(course.getCohortId()).isEqualTo(1);
     }
 
     @Test
     void testGetProfessorMap() throws Exception {
-        // 准备测试数据
+        // Preparing Test Data
         List<Course> courses = new ArrayList<>();
         Course course1 = new Course();
         course1.setTeacher1("Teacher1");
@@ -93,11 +93,11 @@ class GAServiceTest {
         courses.add(course1);
         courses.add(course2);
 
-        // 执行测试
+        // execute a test
         @SuppressWarnings("unchecked")
         Map<Integer, Professor> result = (Map<Integer, Professor>) getProfessorMapMethod.invoke(gaService, courses);
 
-        // 验证结果
+        // Verification results
         assertThat(result).hasSize(3);
         assertThat(result.values())
             .extracting(Professor::getProfessorName)
@@ -111,7 +111,7 @@ class GAServiceTest {
 
     @Test
     void testSetCourseCohortIdWithNonExistentCohort() throws Exception {
-        // 准备测试数据
+        // Preparing Test Data
         List<Course> courses = new ArrayList<>();
         Course course = new Course();
         course.setCohort("NonExistentCohort");
@@ -119,16 +119,16 @@ class GAServiceTest {
 
         Map<Integer, Cohort> cohortMap = Map.of(1, createCohort(1, "Cohort1"));
 
-        // 执行测试
+        // execute a test
         setCourseCohortIdMethod.invoke(gaService, courses, cohortMap);
 
-        // 验证结果
+        // Verification results
         assertThat(course.getCohortId()).isEqualTo(-1);
     }
 
     @Test
     void testGetProfessorMapWithEmptyTeachers() throws Exception {
-        // 准备测试数据
+        // Preparing Test Data
         List<Course> courses = new ArrayList<>();
         Course course = new Course();
         course.setTeacher1("");
@@ -136,11 +136,11 @@ class GAServiceTest {
         course.setTeacher3("");
         courses.add(course);
 
-        // 执行测试
+        // execute a test
         @SuppressWarnings("unchecked")
         Map<Integer, Professor> result = (Map<Integer, Professor>) getProfessorMapMethod.invoke(gaService, courses);
 
-        // 验证结果
+        // Verification results
         assertThat(result).isEmpty();
         assertThat(course.getProfessorNum()).isZero();
         assertThat(course.getTeacherIds()).isEmpty();

@@ -54,7 +54,7 @@ public class GA {
         return (generationsCount > maxGenerations);
     }
 
-//	//均匀交叉
+//  Uniform crossover
 //	public Population crossoverPopulation(Population population) {
 //		Population newPopulation = new Population(population.size());
 //		for(int populationIndex = 0; populationIndex < population.size(); populationIndex++) {
@@ -77,12 +77,12 @@ public class GA {
 //		return newPopulation;
 //	}
 
-    //锦标赛选父母
+    //Tournament Selection of Parents
     public Individual selectParent(Population population) {
         Population tournament = new Population(this.tournamentSize);
         Random random = new SecureRandom();
 
-        // 随机选择 tournamentSize 个个体放入锦标赛种群
+        // Randomly select tournamentSize individuals to be placed in the tournament population.
         for (int i = 0; i < this.tournamentSize; i++) {
             int randomIndex = random.nextInt(population.size());
             Individual tournamentIndividual = population.getIndividual(randomIndex);

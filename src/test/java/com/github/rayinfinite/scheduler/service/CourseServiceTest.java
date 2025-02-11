@@ -34,16 +34,16 @@ class CourseServiceTest {
 
     @Test
     void testFindByCourseDateBetween() throws Exception {
-        // 准备测试数据
+        // Preparing Test Data
         List<Course> courseList = new ArrayList<>(Arrays.asList(
                 createCourse("Teacher1", null, null),
                 createCourse("Teacher2", "Teacher3", null)
         ));
 
-        // 设置 mock 行为
+        // Setting the mock behaviour
         when(courseRepository.findByCourseDateBetween(any(), any())).thenReturn(courseList);
 
-        // 执行测试 - 无教师过滤
+        // Perform Test - No Teacher Filtering
         List<Course> result1 = courseService.findByCourseDateBetween(
                 "2024-03-20T00:00:00.000Z",
                 "2024-03-21T00:00:00.000Z",
@@ -52,7 +52,7 @@ class CourseServiceTest {
         );
         assertThat(result1).hasSize(2);
 
-        // 执行测试 - 有教师过滤
+        // Execute the test - with teacher filtering
         List<Course> result2 = courseService.findByCourseDateBetween(
                 "2024-03-20T00:00:00.000Z",
                 "2024-03-21T00:00:00.000Z",
@@ -64,28 +64,28 @@ class CourseServiceTest {
 
     @Test
     void testGetAllTeachers() {
-        // 准备测试数据
+        // Preparing Test Data
         when(courseRepository.findTeacher1()).thenReturn(Arrays.asList("Teacher1", "Teacher2"));
         when(courseRepository.findTeacher2()).thenReturn(Arrays.asList("Teacher2", "Teacher3"));
         when(courseRepository.findTeacher3()).thenReturn(Arrays.asList("Teacher3", "Teacher4"));
 
-        // 执行测试
+        // execute a test
         List<String> result = courseService.getAllTeachers();
 
-        // 验证结果
+        // Verification results
         assertThat(result)
                 .hasSize(4)
                 .containsExactly("Teacher1", "Teacher2", "Teacher3", "Teacher4");
     }
     @Test
     void testGetAllCohorts() {
-        // 准备测试数据
+        // Preparing Test Data
         when(courseRepository.findCohort()).thenReturn(Arrays.asList("Cohort1", "Cohort2"));
 
-        // 执行测试
+        // execute a test
         List<String> result = courseService.getAllCohorts();
 
-        // 验证结果
+        // Verification results
         assertThat(result).hasSize(2).containsExactly("Cohort1", "Cohort2");
     }
 
@@ -100,25 +100,25 @@ class CourseServiceTest {
 
 
 
-    // 辅助方法：创建测试用的 Excel 文件
+    // Auxiliary method: creating an Excel file for testing
     private static class ExcelGenerator {
         public static byte[] createTestExcel() throws IOException {
             try (XSSFWorkbook workbook = new XSSFWorkbook()) {
                 XSSFSheet sheet = workbook.createSheet("Sheet1");
 
-                // 创建表头
+                // Creating Table Headers
                 Row headerRow = sheet.createRow(0);
                 headerRow.createCell(0).setCellValue("Course Code");
                 headerRow.createCell(1).setCellValue("Course Name");
                 headerRow.createCell(2).setCellValue("Duration");
 
-                // 创建数据行
+                // Creating data rows
                 Row dataRow = sheet.createRow(1);
                 dataRow.createCell(0).setCellValue("CS101");
                 dataRow.createCell(1).setCellValue("Intro to CS");
                 dataRow.createCell(2).setCellValue(120);
 
-                // 写入到字节数组
+                // Write to byte array
                 try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                     workbook.write(bos);
                     return bos.toByteArray();

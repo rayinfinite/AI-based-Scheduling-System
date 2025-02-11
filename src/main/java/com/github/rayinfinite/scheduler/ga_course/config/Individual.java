@@ -44,27 +44,28 @@ public class Individual {
         int newChromosome[] = new int[chromosomeLength];
         int chromosomeIndex = 0;
 
-        for (Cohort cohort : timetable.getCohorts().values()) { // 新增初始化个体就分全日和非全，优化性能
+        for (Cohort cohort : timetable.getCohorts().values()) {
+            // New initialisation of individuals into full-time and part-time, to optimise performance.
             String cohortType = cohort.getCohortType();
             for (int courseId : cohort.getCourseIds()) {
                 Course course = timetable.getCourse(courseId);
                 int timeslotId;
                 if ("0".equals(cohortType)) {
-                    timeslotId = timetable.getRandomWeekdayTimeslot().getId(); // 工作日
+                    timeslotId = timetable.getRandomWeekdayTimeslot().getId(); // Workday
                 } else if ("1".equals(cohortType)) {
-                    timeslotId = timetable.getRandomFridaySaturdayTimeslot().getId(); // 周五或周六
+                    timeslotId = timetable.getRandomFridaySaturdayTimeslot().getId(); // Friday or Saturday
                 } else {
                     throw new IllegalArgumentException("Invalid cohortType: " + cohortType);
                 }
                 newChromosome[chromosomeIndex] = timeslotId;
                 chromosomeIndex++;
 
-                // 随机分配教室
+                // Random assignment of classrooms
                 int roomId = timetable.getRandomRoom().getId();
                 newChromosome[chromosomeIndex] = roomId;
                 chromosomeIndex++;
 
-                // 获取教授信息
+                // Getting information about professors
                 int professorNum = course.getProfessorNum();
                 int[] professorIds = course.getTeacherIds();
 
@@ -75,15 +76,15 @@ public class Individual {
                     professorList.add(id);
                 }
 
-                // 打乱教授列表顺序
+                // Disrupting the order of professors' lists
                 Collections.shuffle(professorList);
 
-                // 为课程分配教授
+                // Assigning professors to courses
                 for (int i = 0; i < 3; i++) {
                     if (i < professorNum) {
                         newChromosome[chromosomeIndex] = professorList.get(i);
                     } else {
-                        newChromosome[chromosomeIndex] = -1; // 如果没有足够的教授，设置为 -1
+                        newChromosome[chromosomeIndex] = -1; // If there aren't enough professors, set it to -1
                     }
                     chromosomeIndex++;
                 }

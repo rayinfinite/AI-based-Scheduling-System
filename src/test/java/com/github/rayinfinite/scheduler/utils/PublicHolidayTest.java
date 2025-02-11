@@ -11,31 +11,31 @@ class PublicHolidayTest {
 
     @Test
     void testIsPublicHoliday() {
-        // 测试已知的新加坡公共假期（如农历新年）
+        // Test known Singapore public holidays (e.g. Lunar New Year)
         LocalDate newYear = LocalDate.of(2024, 1, 1);
         assertTrue(PublicHoliday.isPublicHoliday(newYear));
         
-        // 测试普通工作日
+        // Test ordinary working days
         LocalDate normalDay = LocalDate.of(2024, 1, 2);
         assertFalse(PublicHoliday.isPublicHoliday(normalDay));
     }
 
     @Test
     void testDetails() {
-        // 测试已知的公共假期的详细信息
+        // Testing details of known public holidays
         LocalDate newYear = LocalDate.of(2024, 1, 1);
         String details = PublicHoliday.details(newYear);
         assertNotNull(details);
         assertTrue(details.contains("New Year"));
 
-        // 测试非公共假期
+        // Testing of non-public holidays
         LocalDate normalDay = LocalDate.of(2024, 1, 2);
         assertNull(PublicHoliday.details(normalDay));
     }
 
     @Test
     void testInvalidYearRange() {
-        // 测试超出范围的年份
+        // Years in which testing was out of range
         LocalDate pastDate = LocalDate.of(2017, 1, 1);
         assertThrows(IllegalArgumentException.class, () -> 
             PublicHoliday.isPublicHoliday(pastDate)
@@ -49,11 +49,11 @@ class PublicHolidayTest {
 
     @Test
     void testMultipleYears() {
-        // 测试跨多个年份的查询
+        // Testing queries across multiple years
         LocalDate date2024 = LocalDate.of(2024, 1, 1);
         LocalDate date2023 = LocalDate.of(2023, 1, 1);
         
-        // 验证可以查询不同年份的假期
+        // Verification allows you to check holidays for different years
         assertTrue(PublicHoliday.isPublicHoliday(date2024));
         assertTrue(PublicHoliday.isPublicHoliday(date2023));
     }

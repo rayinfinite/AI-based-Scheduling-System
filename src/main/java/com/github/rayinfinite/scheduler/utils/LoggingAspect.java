@@ -35,7 +35,7 @@ public class LoggingAspect {
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof OidcUser oidcUser) {
-            if (args.length > 0) { // 确保至少有一个参数用于toString
+            if (args.length > 0) { // Ensure that at least one parameter is used for the toString
                 String params = switch (args[0]) {
                     case String s -> s;
                     case File file -> file.getAbsolutePath();
@@ -43,7 +43,7 @@ public class LoggingAspect {
                     case null -> null;
                     default -> args[0].toString();
                 };
-                loginUtil.log(actionDescription, params, oidcUser); // 假设第一个参数是要记录的对象
+                loginUtil.log(actionDescription, params, oidcUser); // Assuming the first argument is the object to be recorded
             }
 
             return joinPoint.proceed();

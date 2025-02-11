@@ -23,16 +23,16 @@ class ClassroomRepositoryTest {
 
     @Test
     void testSaveAndFindById() {
-        // 创建测试数据
+        // Creating Test Data
         Classroom classroom = new Classroom();
         classroom.setName("Test Room");
         classroom.setSize(30);
 
-        // 保存到数据库
+        // Save to database
         Classroom savedClassroom = entityManager.persist(classroom);
         entityManager.flush();
 
-        // 测试查找
+        // Test Search
         Optional<Classroom> found = classroomRepository.findById(savedClassroom.getId());
 
         assertThat(found).isPresent();
@@ -42,7 +42,7 @@ class ClassroomRepositoryTest {
 
     @Test
     void testFindAll() {
-        // 创建测试数据
+        // Creating Test Data
         Classroom classroom1 = new Classroom();
         classroom1.setName("Room 1");
         Classroom classroom2 = new Classroom();
@@ -52,23 +52,23 @@ class ClassroomRepositoryTest {
         entityManager.persist(classroom2);
         entityManager.flush();
 
-        // 测试查找所有
+        // Test to find all
         assertThat(classroomRepository.findAll()).hasSize(2);
     }
 
     @Test
     void testDelete() {
-        // 创建测试数据
+        // Creating Test Data
         Classroom classroom = new Classroom();
         classroom.setName("To Delete");
         
         Classroom savedClassroom = entityManager.persist(classroom);
         entityManager.flush();
 
-        // 删除
+        // removing
         classroomRepository.deleteById(savedClassroom.getId());
 
-        // 验证删除
+        // Verify Delete
         assertThat(classroomRepository.findById(savedClassroom.getId())).isEmpty();
     }
 } 

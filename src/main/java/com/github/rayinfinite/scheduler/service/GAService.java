@@ -39,7 +39,7 @@ public class GAService {
 
         Map<String, List<Course>> cohortCourses = courseList.stream().collect(Collectors.groupingBy(Course::getCohort));
 
-        // 使用 Set 来避免重复添加 Registration
+        // Use Set to Avoid Adding Registration Duplicates
         Set<Registration> registrationsSet = new HashSet<>();
 
         for (Cohort cohort : cohortList) {
@@ -67,27 +67,27 @@ public class GAService {
 
         Timetable timetable = new Timetable(courseMap, cohortMap, timeslotMap, classroomMap, teacherMap);
 
-        // 将 Set 转换回 List
+        // Converting a Set back to a List
         registrations = new ArrayList<>(registrationsSet);
 
         return getSchedule(timetable);
     }
 
     public List<OutputData> detection(List<OutputData> dataList, List<Classroom> classroomList) {
-        // 提取并转换 OutputData 为基础实体
+        // Extracts and transforms OutputData into base entities
         List<Course> courseList = dataList.stream().map(this::convertToCourse).toList();
         List<Cohort> cohortList = dataList.stream().map(this::convertToCohort).toList();
         List<Timeslot> timeslotList = dataList.stream().map(this::convertToTimeslot).toList();
 
-        // 创建 ID 映射
+        // Creating ID Mapping
         IntStream.range(0, courseList.size()).forEach(i -> courseList.get(i).setId(i));
         IntStream.range(0, cohortList.size()).forEach(i -> cohortList.get(i).setId(i));
         IntStream.range(0, timeslotList.size()).forEach(i -> timeslotList.get(i).setId(i));
         IntStream.range(0, classroomList.size()).forEach(i -> classroomList.get(i).setId(i));
 
-        // 转换为 TeachingPlan 列表
+        // Convert to TeachingPlan list
         List<TeachingPlan> teachingPlans = new ArrayList<>();
-        Map<Integer, Set<LocalDate>> roomUsageDays = new HashMap<>(); // 教室使用日期记录
+        Map<Integer, Set<LocalDate>> roomUsageDays = new HashMap<>(); // Record of classroom usage dates
         final LocalDate[] minDate = {null};
         final LocalDate[] maxDate = {null};
 
@@ -107,7 +107,7 @@ public class GAService {
                     .toLocalDate();
             roomUsageDays.computeIfAbsent(plan.getRoomId(), k -> new HashSet<>()).add(courseDate);
 
-            // 更新最早和最晚日期
+            // Updated earliest and latest dates
             if (minDate[0] == null || courseDate.isBefore(minDate[0])) {
                 minDate[0] = courseDate;
             }
@@ -118,7 +118,7 @@ public class GAService {
             teachingPlans.add(plan);
         });
 
-        // 创建 Timetable 实例并计算冲突
+        // Creating a Timetable Instance and Calculating Conflicts
         Map<Integer, Course> courseMap = createMap(courseList, Course::getId);
         Map<Integer, Cohort> cohortMap = createMap(cohortList, Cohort::getId);
         Map<Integer, Timeslot> timeslotMap = createMap(timeslotList, Timeslot::getId);
@@ -146,7 +146,7 @@ public class GAService {
             }
         });
 
-        // 计算教室利用率
+        // Calculation of classroom utilisation
         if (minDate[0] != null && maxDate[0] != null) {
             long totalDays = ChronoUnit.DAYS.between(minDate[0], maxDate[0]) + 1;
             long totalUsedDays = 0;
@@ -163,7 +163,7 @@ public class GAService {
                 roomUtilization.add(new RoomUtilization(roomName, usedDays, formattedUtilizationRate));
             }
 
-            // 计算总利用率
+            // Calculation of the total utilisation rate
             double overallUtilizationRate = (double) totalUsedDays / (totalRooms * totalDays);
             String formattedOverallUtilizationRate = String.format("%.2f", overallUtilizationRate * 100) + "%";
             roomUtilization.add(new RoomUtilization("Total", (int) totalDays, formattedOverallUtilizationRate));
@@ -281,7 +281,7 @@ public class GAService {
     }
 
     public List<Course> getSchedule(Timetable timetable) {
-        // 初始化 GA
+        // Initialising GA
         int maxGenerations = 1000;
         GA ga = new GA(100, 0.01, 0.7, 1, 5);
         Population population = ga.initPopulation(timetable);
@@ -307,11 +307,11 @@ public class GAService {
             String clashType = entry.getKey();
             List<TeachingPlan> clashPlans = (List<TeachingPlan>) entry.getValue();
 
-            // 打印冲突类型和对应的冲突计划数量
+            // Print the type of conflict and the corresponding number of conflict plans
 //            log.info("{}: {} clashes", clashType, clashPlans.size());
 
             int i = 0;
-            // 打印每个冲突的详细信息
+            // Print the details of each conflict
             for (TeachingPlan plan : clashPlans) {
                 String roomName = timetable.getRoom(plan.getRoomId()).getName();
                 Date dateTime = timetable.getTimeslot(plan.getTimeslotId()).getDate();
@@ -330,17 +330,17 @@ public class GAService {
         List<Course> courseList = new ArrayList<>();
 
         Map<String, Map<Integer, List<Course>>> groupedCourses = new HashMap<>();
-        Map<Integer, Set<LocalDate>> roomUsageDays = new HashMap<>(); // 教室使用日期记录
+        Map<Integer, Set<LocalDate>> roomUsageDays = new HashMap<>(); // Record of classroom usage dates
         LocalDate minDate = null;
         LocalDate maxDate = null;
 
-        // 生成 List<InputData>
+        // Generate List<InputData>
         for (TeachingPlan bestPlan : timetable.getPlans()) {
             int courseId = bestPlan.getCourseId();
             Course course = new Course();
             BeanUtils.copyProperties(timetable.getCourse(courseId), course);
 
-            // 设置额外属性
+            // Setting additional properties
             course.setClassroom(timetable.getRoom(bestPlan.getRoomId()).getName());
             LocalDate courseDate = timetable.getTimeslot(bestPlan.getTimeslotId())
                     .getDate()
@@ -349,10 +349,10 @@ public class GAService {
                     .toLocalDate();
             course.setCourseDate(Date.from(courseDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
-            // 更新教室使用日期记录
+            // Updated records of classroom usage dates
             roomUsageDays.computeIfAbsent(bestPlan.getRoomId(), k -> new HashSet<>()).add(courseDate);
 
-            // 更新最早和最晚日期
+            // Updated earliest and latest dates
             if (minDate == null || courseDate.isBefore(minDate)) {
                 minDate = courseDate;
             }
@@ -360,41 +360,41 @@ public class GAService {
                 maxDate = courseDate;
             }
 
-            // 根据 courseName 和 courseCode 分组，同时细分 cohort
+            // Grouping based on courseName and courseCode, with cohort breakdowns
             String groupKey = course.getCourseName() + "_" + course.getCourseCode();
             int cohortId = timetable.getCohort(bestPlan.getCohortId()).getId();
 
             groupedCourses
-                    .computeIfAbsent(groupKey, k -> new HashMap<>()) // 分组：按课程标识
-                    .computeIfAbsent(cohortId, k -> new ArrayList<>()) // 细分：按 cohort
+                    .computeIfAbsent(groupKey, k -> new HashMap<>()) // Grouping: identification by course
+                    .computeIfAbsent(cohortId, k -> new ArrayList<>()) // Breakdown: by cohort
                     .add(course);
 
             courseList.add(course);
         }
 
-        // 设置 run 值
+        // Setting the run value
         for (Map<Integer, List<Course>> cohortGroup : groupedCourses.values()) {
-            // 将 cohort 按时间顺序排序
+            // Sort cohort in chronological order
             List<Integer> sortedCohorts = cohortGroup.keySet().stream()
                     .sorted((cohort1, cohort2) -> {
-                        // 按 cohort 的第一门课的日期排序
+                        // Sort by date of cohort's first class
                         Date date1 = cohortGroup.get(cohort1).getFirst().getCourseDate();
                         Date date2 = cohortGroup.get(cohort2).getFirst().getCourseDate();
                         return date1.compareTo(date2);
                     })
                     .toList();
 
-            // 按顺序设置 run 值
+            // Setting run values sequentially
             int run = 1;
             for (int cohortId : sortedCohorts) {
                 for (Course course : cohortGroup.get(cohortId)) {
-                    course.setRun(run); // 为该 cohort 的所有课程设置相同的 run 值
+                    course.setRun(run); // Set the same run value for all courses in the cohort
                 }
                 run++;
             }
         }
 
-        // 计算教室利用率
+        // Calculation of classroom utilisation
         if (minDate != null && maxDate != null) {
             long totalDays = ChronoUnit.DAYS.between(minDate, maxDate) + 1;
 //            log.info("Total scheduling days: {}", totalDays);
@@ -415,11 +415,11 @@ public class GAService {
                 roomUtilization.add(new RoomUtilization(roomName, usedDays, formattedUtilizationRate));
             }
 
-            // 计算总利用率
+            // Calculation of the total utilisation rate
             double overallUtilizationRate = (double) totalUsedDays / (totalRooms * totalDays);
             String formattedOverallUtilizationRate = String.format("%.2f", overallUtilizationRate * 100) + "%";
             String total = "Total";
-            // 打印总利用率
+            // Total print utilisation
 //            log.info("Overall Utilization Rate: {}", formattedOverallUtilizationRate);
             roomUtilization.add(new RoomUtilization(total, (int) totalDays, formattedOverallUtilizationRate));
         }

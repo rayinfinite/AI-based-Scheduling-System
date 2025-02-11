@@ -141,7 +141,7 @@ export const downloadExcel = async () => {
   window.URL.revokeObjectURL(url);
 };
 
-export async function getUser(): Promise<boolean> {
+export async function getUser(): Promise<string> {
   return await fetch(`${ROOT_PATH}/login`)
     .then((response) => response.json())
     .catch((error) => console.error("Error:", error));

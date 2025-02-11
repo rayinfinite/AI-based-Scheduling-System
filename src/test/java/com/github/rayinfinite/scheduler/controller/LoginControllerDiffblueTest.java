@@ -51,7 +51,7 @@ class LoginControllerDiffblueTest {
         //   a non-Spring test was created.
 
         // Arrange, Act and Assert
-        assertFalse(
+        assertEquals("false",
                 (new LoginController(new LoginUtil(mock(AuditLogRepository.class), mock(UserRepository.class)))).login(null));
     }
 

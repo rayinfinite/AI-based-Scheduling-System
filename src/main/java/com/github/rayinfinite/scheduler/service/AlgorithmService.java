@@ -9,6 +9,7 @@ import com.github.rayinfinite.scheduler.entity.*;
 import com.github.rayinfinite.scheduler.excel.BaseExcelReader;
 import com.github.rayinfinite.scheduler.repository.CourseRepository;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -16,7 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -28,6 +30,8 @@ public class AlgorithmService {
     private final ClassroomService classroomService;
     private final GAService gaService;
     private final Lock lock = new ReentrantLock();
+    @Getter
+    private boolean taskRunning = false;
 
     public String upload(MultipartFile file) throws IOException {
         lock.lock();
@@ -45,8 +49,14 @@ public class AlgorithmService {
         }
         lock.unlock();
 
-        Thread.ofVirtual().start(() -> gap(courseReader.getDataList(), cohortReader.getDataList(),
-                timeReader.getDataList()));
+        Thread.ofVirtual().start(() -> {
+            try {
+                taskRunning = true;
+                gap(courseReader.getDataList(), cohortReader.getDataList(), timeReader.getDataList());
+            } finally {
+                taskRunning = false;
+            }
+        });
         return "success";
     }
 
@@ -68,7 +78,14 @@ public class AlgorithmService {
         gaService.updateRegistrations(registrationReader.getDataList());
         lock.unlock();
 
-        Thread.ofVirtual().start(() -> detection(outputDataReader.getDataList()));
+        Thread.ofVirtual().start(() -> {
+            try {
+                taskRunning = true;
+                detection(outputDataReader.getDataList());
+            } finally {
+                taskRunning = false;
+            }
+        });
         return "success";
     }
 
@@ -115,23 +132,23 @@ public class AlgorithmService {
 
         ExcelWriter excelWriter = EasyExcel.write(response.getOutputStream()).build();
 
-        // 写入第一个 Sheet - 课程信息
+        // Write First Sheet - Course Information
         WriteSheet courseSheet = EasyExcel.writerSheet(0, "Course").head(OutputData.class).build();
         excelWriter.write(outputDataList, courseSheet);
 
-        // 写入第二个 Sheet - 冲突报告
+        // Write to Second Sheet - Conflict Report
         WriteSheet clashSheet = EasyExcel.writerSheet(1, "Clash").head(ClashData.class).build();
         excelWriter.write(clashInfos, clashSheet);
 
-        // 写入第三个 Sheet - 教室利用率
+        // Write to Third Sheet - Classroom Utilisation
         WriteSheet roomUtilizationSheet = EasyExcel.writerSheet(2, "Utilization").head(RoomUtilization.class).build();
         excelWriter.write(roomUtilizations, roomUtilizationSheet);
 
-        // 写入第四个 Sheet - 注册
+        // Write to 4th Sheet - Register
         WriteSheet registrationSheet = EasyExcel.writerSheet(3, "Registration").head(Registration.class).build();
         excelWriter.write(registrations, registrationSheet);
 
-        // 关闭 ExcelWriter
+        // Close ExcelWriter
         excelWriter.finish();
     }
 }

@@ -41,23 +41,27 @@ public class LoginUtil {
             if(!user.isActive()){
                 throw new BusinessException("User is inactive");
             }
+            user.setName(username);
             if (user.getLastLogin() != null) {
                 Date tenMinutesAgo = new Date(System.currentTimeMillis() - 10 * 60 * 1000);
                 if (user.getLastLogin().before(tenMinutesAgo)) {
                     user.setLastLogin(new Date());
+                    userRepository.save(user);
                 }
             } else {
+                user.setCreated(new Date());
                 user.setLastLogin(new Date());
+                userRepository.save(user);
             }
-            userRepository.save(user);
         }, () -> {
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setName(username);
-            newUser.setActive(true);
+            newUser.setActive(false);
             newUser.setCreated(new Date());
             newUser.setLastLogin(new Date());
             userRepository.save(newUser);
+            throw new BusinessException("User not found");
         });
     }
 }

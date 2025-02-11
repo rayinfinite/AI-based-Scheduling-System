@@ -1,5 +1,6 @@
 spring.security.oauth2.client:
   registration:
     azure:
-      redirect-uri: https://www.aicourse-iss.online/login/oauth2/code/
-success-url: https://www.aicourse-iss.online
+      redirect-uri: ${URL}/login/oauth2/code/
+success-url: ${URL}
+server.port: 80
