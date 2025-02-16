@@ -98,7 +98,7 @@ const UploadPage: React.FC = () => {
           <SheetTrigger asChild>
             <Button>Classroom Config</Button>
           </SheetTrigger>
-          <SheetContent className="w-[640px] max-w-full sm:max-w-[640px] gap-4 flex flex-col">
+          <SheetContent className="w-[640px] max-w-full sm:max-w-[640px] gap-4 flex flex-col overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Classroom Information</SheetTitle>
             </SheetHeader>
