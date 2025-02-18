@@ -2,7 +2,7 @@ FROM alpine:3.21
 
 RUN apk update \
   && apk upgrade \
-  && apk add --no-cache openjdk21-jdk \
+  && apk add --no-cache openjdk21-jre \
   && rm -rf /var/cache/apk/*
 
 ENV TZ=Asia/Shanghai

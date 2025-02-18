@@ -1,9 +1,17 @@
 # microservice version of AI-based Scheduling System
-
+prerequisite: docker, docker compose, maven, jdk21
 ```shell
+maven clean package
 docker-compose build
 docker-compose push
 ```
+
+update docker base jre image
+```shell
+docker build --no-cache -t ray2/jdk .
+docker push ray2/jdk
+```
+
 [Docker Hub](https://hub.docker.com/u/ray2)
 
 ## Deploy method:
