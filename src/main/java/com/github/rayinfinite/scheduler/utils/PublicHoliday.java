@@ -50,37 +50,54 @@ public class PublicHoliday {
         return isPublicHoliday(date) ? holidays.get(date) : null;
     }
 
-    //TODO: retry network request if failed
     private static synchronized void parseDownloadedIcsContent(int year) throws IOException, ParserException {
         String urlString = ICS_URL.replace("2025", String.valueOf(year));
         if (parsedYears.contains(year)) {
             return;
         }
-        URL url = URI.create(urlString).toURL();
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
+        int maxRetries = 3;
+        int retryCount = 0;
+        while (retryCount < maxRetries) {
+            try {
+                URL url = URI.create(urlString).toURL();
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode != HttpURLConnection.HTTP_OK) {
-            throw new IOException("Failed to download file: HTTP error code : " + responseCode);
-        }
+                int responseCode = connection.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    throw new IOException("Failed to download file: HTTP error code : " + responseCode);
+                }
 
-        try (InputStream inputStream = connection.getInputStream()) {
-            byte[] icsContent = inputStream.readAllBytes();
+                try (InputStream inputStream = connection.getInputStream()) {
+                    byte[] icsContent = inputStream.readAllBytes();
 
-            try (InputStream icsStream = new ByteArrayInputStream(icsContent)) {
-                CalendarBuilder builder = new CalendarBuilder();
-                Calendar calendar = builder.build(icsStream);
-                for (Component component : calendar.getComponents()) {
-                    if (component instanceof VEvent event) {
-                        var getSummary = event.getSummary();
-                        var getDateTimeStart = event.getDateTimeStart();
-                        if (getSummary.isPresent() && getDateTimeStart.isPresent()) {
-                            String summary = getSummary.get().getValue();
-                            LocalDate start = LocalDate.from(getDateTimeStart.get().getDate());
-                            holidays.put(start, summary);
-                        }
+                    try (InputStream icsStream = new ByteArrayInputStream(icsContent)) {
+                        CalendarBuilder builder = new CalendarBuilder();
+                        Calendar calendar = builder.build(icsStream);
+                        parseCalendar(calendar);
                     }
+                }
+                break;
+            } catch (IOException e) {
+                retryCount++;
+                log.warn("Attempt {} to download ICS content for year {} failed. Retrying...", retryCount, year, e);
+                if (retryCount == maxRetries) {
+                    log.error("Failed to download ICS content for year {} after {} attempts", year, maxRetries, e);
+                    throw e;
+                }
+            }
+        }
+    }
+
+    private static void parseCalendar(Calendar calendar) {
+        for (Component component : calendar.getComponents()) {
+            if (component instanceof VEvent event) {
+                var getSummary = event.getSummary();
+                var getDateTimeStart = event.getDateTimeStart();
+                if (getSummary != null && getDateTimeStart != null) {
+                    String summary = getSummary.getValue();
+                    LocalDate start = LocalDate.from(getDateTimeStart.getDate());
+                    holidays.put(start, summary);
                 }
             }
         }
